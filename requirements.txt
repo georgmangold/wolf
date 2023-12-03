@@ -1,0 +1,8 @@
+Pyside6
+networkx
+osmnx
+matplotlib
+scikit-learn
+contextily
+svgpath2mpl
+svgpathtools
