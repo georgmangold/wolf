@@ -14,7 +14,7 @@ def dijkstra(G, start, target, abort=True):
 
     todo.put((0, start))
     i = 0
-    while todo:
+    while not todo.empty():
 
         inner_array = []
 
