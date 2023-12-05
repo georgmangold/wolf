@@ -170,7 +170,7 @@ class UI(QMainWindow):
         self.slider_velocity.setObjectName("slider_velocity")
         self.slider_velocity.setOrientation(Qt.Horizontal)
         self.slider_velocity.setMinimum(50)
-        self.slider_velocity.setMaximum(200)
+        self.slider_velocity.setMaximum(10000)
         self.slider_velocity.setMaximumWidth(150)
         self.slider_velocity.setMinimumWidth(50)
         self.slider_velocity.setValue(100)
