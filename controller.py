@@ -59,6 +59,8 @@ class Controller:
         self.end = None
         self.end_point = None
         self.routen_punkte = []
+        
+        self.plot_steps = {}
                 
         self.graph = None
         #self.besuchte_routen = []
@@ -159,20 +161,22 @@ class Controller:
         self.ui.label_steps.setText(f"Schritte: {value} von {len(self.besuchte_routen)+1}")
 
     def slider_Steps_value_changed(self, value):
-        print(f'Slider changed: {value}')
+        '''
+        Slot welcher aufgerufen wird wenn sich Slider ändert,
+        egal ob händisch / Button oder StepsTimer
+        '''
+        #print(f'Slider changed: {value}')
         mutex = self.mutex_slider.tryLock(0)
         if mutex:
-            print("Slider locked")
+            #print("Slider locked")
             self.ui.label_steps.setText(f"Schritte: {value} von {len(self.besuchte_routen)+1}")
             if value > self.current_step:
                 self.plotRoutesSteps(self.besuchte_routen, self.current_step, value)
             elif value < self.current_step:              
-                #anzahl = len([item for sublist in self.besuchte_routen[value:self.current_step] for item in sublist])
-                #self.delete_last_lines(anzahl)
-                self.delete_last_lines_by_step(value-1)
-                self.plotRoutesSteps(self.besuchte_routen, value-1, value)
+                self.delete_last_lines(value)
             else:
-                print(value)
+                #print(value)
+                pass
             self.current_step = value
             self.mutex_slider.unlock()
         
@@ -379,11 +383,11 @@ class Controller:
 
         self.ui.slider_Steps.setMaximum(len(self.besuchte_routen)+1)
         # Step 1: Create a worker class
-        # BackwardWorker
+        # StepsWorker
         # Step 2: Create a QThread object
         self.thread = QThread()
         # Step 3: Create a worker object
-        self.worker = self.BackwardWorker(self.current_step, self.velocity)
+        self.worker = self.StepsWorker(self.current_step,0, self.velocity)
         # Step 4: Move worker to the thread
         self.worker.moveToThread(self.thread)
         # Step 5: Connect signals and slots
@@ -403,11 +407,11 @@ class Controller:
 
         self.ui.slider_Steps.setMaximum(len(self.besuchte_routen)+1)
         # Step 1: Create a worker class
-        # ForwardWorker
+        # StepsWorker
         # Step 2: Create a QThread object
         self.thread = QThread()
         # Step 3: Create a worker object
-        self.worker = self.ForwardWorker(self.current_step,len(self.besuchte_routen)+1, self.velocity)
+        self.worker = self.StepsWorker(self.current_step,len(self.besuchte_routen)+1, self.velocity)
         # Step 4: Move worker to the thread
         self.worker.moveToThread(self.thread)
         # Step 5: Connect signals and slots
@@ -468,51 +472,41 @@ class Controller:
     
     def plotRoutesSteps(self, routen, von, bis):
 
+        if von < 0:
+            return
+        
         while von < bis:
 
             # Routen davor anders färben
-            
-            if von > 0:
-                routes_before = routen[von-1]
-                anzahl_davor = len(routes_before )
-                #self.delete_last_lines(anzahl)
-                self.delete_last_lines_by_step(von-1)
-                if anzahl_davor > 1:
-                    self.fig, self.ax = self.plot_graph_routes(self.graph, routes_before, ax=self.ui.canvas.axes, route_colors=self.color_steps, route_linewidths=self.steps_linewidth, orig_dest_size=0,route_label=f'{von}', draw_and_flash=False, route_alpha=self.steps_alpha)
-                elif anzahl_davor == 1:
-                    routes_before = routes_before[0]
-                    self.fig, self.ax = self.plot_graph_route(self.graph, routes_before, ax=self.ui.canvas.axes, route_color=self.color_steps, route_linewidth=self.steps_linewidth, orig_dest_size=0,route_label=f'{von}', draw_and_flash=False, route_alpha=self.steps_alpha)
+            self.route_before_recolor(von, self.color_steps)
             
             # Flatten Routes  
             routes = [item for sublist in routen[von:(von+1)] for item in sublist]
             #print(routes)
             anzahl = len(routes) 
             if anzahl > 1:
-                #self.fig, self.ax = ox.plot_graph_routes(self.graph, routes, ax=self.ui.canvas.axes, route_colors="red", route_linewidth=4, orig_dest_size=0,show=False)
-                self.fig, self.ax = self.plot_graph_routes(self.graph, routes, ax=self.ui.canvas.axes, route_colors=self.color_new_steps, route_linewidths=self.steps_linewidth, orig_dest_size=0,route_label=f'{von+1}', route_alpha=self.steps_alpha)
-
+                self.fig, self.ax, plots = self.plot_graph_routes(self.graph, routes, ax=self.ui.canvas.axes, route_colors=self.color_new_steps, route_linewidths=self.steps_linewidth, orig_dest_size=0,route_label=f'{von+1}', route_alpha=self.steps_alpha, draw_and_flush=False)
+                self.plot_steps[von+1] = plots
             elif anzahl == 1:
                 routes = routes[0]
-                #self.fig, self.ax = ox.plot_graph_route(self.graph, routes, ax=self.ui.canvas.axes, route_color="red", route_linewidth=4, orig_dest_size=0,show=False)
-                self.fig, self.ax = self.plot_graph_route(self.graph, routes, ax=self.ui.canvas.axes, route_color=self.color_new_steps, route_linewidth=self.steps_linewidth, orig_dest_size=0,route_label=f'{von+1}', route_alpha=self.steps_alpha)
+                self.fig, self.ax, plot = self.plot_graph_route(self.graph, routes, ax=self.ui.canvas.axes, route_color=self.color_new_steps, route_linewidth=self.steps_linewidth, orig_dest_size=0,route_label=f'{von+1}', route_alpha=self.steps_alpha, draw_and_flush=False)
+                self.plot_steps[von+1] = plot
 
             von = von+1
+            #print(self.plot_steps)
+        
+        # Draw and Flush erst wenn alle Routen gezeichnet wurden
+        self.fig.canvas.draw()
+        self.fig.canvas.flush_events()
         
         # Am Ende Route malen
         if von > len(self.besuchte_routen):
-            # Duplicate Code..
-            routes_before = routen[von-2]
-            anzahl_davor = len(routes_before )
-            #self.delete_last_lines(anzahl)
-            self.delete_last_lines_by_step(von-2)
-            if anzahl_davor > 1:
-                self.fig, self.ax = self.plot_graph_routes(self.graph, routes_before, ax=self.ui.canvas.axes, route_colors=self.color_steps, route_linewidths=self.steps_linewidth, orig_dest_size=0,route_label=f'{von}', draw_and_flash=False, route_alpha=self.steps_alpha)
-            elif anzahl_davor == 1:
-                routes_before = routes_before[0]
-                self.fig, self.ax = self.plot_graph_route(self.graph, routes_before, ax=self.ui.canvas.axes, route_color=self.color_steps, route_linewidth=self.steps_linewidth, orig_dest_size=0,route_label=f'{von}', draw_and_flash=False, route_alpha=self.steps_alpha)
-        
-            self.fig, self.ax = self.plot_graph_route(self.graph, self.found_path, ax=self.ui.canvas.axes, route_color=self.route_color, route_linewidth=self.route_linewidth, orig_dest_size=0,route_label='route', route_alpha=self.route_alpha)    
-        
+            self.route_before_recolor(von, self.color_steps)
+            
+            if self.found_path is not None and len(self.found_path)>0:
+                self.fig, self.ax, plot = self.plot_graph_route(self.graph, self.found_path, ax=self.ui.canvas.axes, route_color=self.route_color, route_linewidth=self.route_linewidth, orig_dest_size=0,route_label='route', route_alpha=self.route_alpha)    
+                self.plot_steps[von+1] = plot
+
     def plotRouteDemo(self):
         if self.ui.radio_weight_length.isChecked():
            self.weight = "length"  
@@ -530,48 +524,31 @@ class Controller:
                     line.remove()
             route = ox.shortest_path(self.graph, self.start, self.end, weight=self.weight)
             self.fig, self.ax = ox.plot_graph_route(self.graph, route, ax=self.ui.canvas.axes, route_color=self.route_color, route_linewidth=self.route_linewidth, orig_dest_size=self.orig_dest_size,show=False,route_alpha=1)
-    
-    def delete_last_lines(self,anzahl):
-        lines = reversed(self.ax.get_lines())
-        i = 0
-        line = next(lines, None)
-        while ((i < anzahl) and (line is not None)):
-            #print(line.get_data())
-            try:
-                label = line.get_label()
-                if  label != "ende" and label != "start" and label != "route_punkte":
-                    line.remove()
-                else:
-                    i -= 1
-            except ValueError:
-                #Slider zu schnell...abs
-                #Line schon gelöscht
-                pass
-            line = next(lines, None)
-            i += 1
-        self.fig.canvas.draw()
-        self.fig.canvas.flush_events()
-    
-    def delete_last_lines_by_step(self,step):
+        
+    def delete_last_lines(self,step):
         '''
-        Löschen anhand des Labels besser als anhand der Anzahl
+        Löschen direkt aus den gespeicherten Lines
         '''
-        lines = reversed(self.ax.get_lines())
-        for line in lines:
-            label = line.get_label()
-            if  label != "ende" and label != "start" and label != "route_punkte":
-                if label == "route" or int(label) > step:
-                    line.remove()
-                else:
-                    break
+        keys = []
+        for key in self.plot_steps.keys():
+            if key > step:
+                keys.append(key)
+        
+        for key in keys:
+            lines = self.plot_steps.pop(key)
+            for line in lines:
+                line.remove()
+        
+        self.route_before_recolor(step, self.color_new_steps)
+     
         self.fig.canvas.draw()
         self.fig.canvas.flush_events()
                 
     def stop_thread(self):
         if self.thread.isRunning():
-                self.worker.stop()
-                self.thread.quit()
-                self.thread.wait()
+            self.worker.stop()
+            self.thread.quit()
+            self.thread.wait()
     
     def thread_finished(self):
         self.thread = QThread()
@@ -583,7 +560,7 @@ class Controller:
                 self.worker.setSpeed(self.velocity)
             self.mutex_button_press.unlock()
         
-    class ForwardWorker(QObject):
+    class StepsWorker(QObject):
         
         def __init__(self, start, ende, velocity):
             super().__init__()
@@ -596,40 +573,21 @@ class Controller:
         progress = Signal(int)
         
         def run(self):
-            while(self.start < self.ende and self.running ):
-                print(self.start)
-                self.start += 1
-                self.progress.emit(self.start)
-                sleeptime = 1 / self.velocity
-                sleep(sleeptime)
-            
-            self.finished.emit()
-        
-        def setSpeed(self, velocity):
-            self.velocity = velocity
-             
-        def stop(self):
-            self.running = False
-            
-    class BackwardWorker(QObject):
-        
-        def __init__(self, start, velocity):
-            super().__init__()
-            self.start = start
-            self.velocity = velocity
-            self.running = True
-            
-        finished = Signal()
-        progress = Signal(int)
-        
-        def run(self):
-            while(self.start > 0 and self.running ):
-                print(self.start)
-                self.start -= 1
-                self.progress.emit(self.start)
-                sleeptime = 1 / self.velocity
-                sleep(sleeptime)
-            
+            if self.start < self.ende:
+                while(self.start < self.ende and self.running ):
+                    #print(self.start)
+                    self.start += 1
+                    self.progress.emit(self.start)
+                    sleeptime = 1 / self.velocity
+                    sleep(sleeptime)
+            elif self.start > self.ende:
+                while(self.start > 0 and self.running ):
+                    #print(self.start)
+                    self.start -= 1
+                    self.progress.emit(self.start)
+                    sleeptime = 1 / self.velocity
+                    sleep(sleeptime)
+                    
             self.finished.emit()
         
         def setSpeed(self, velocity):
@@ -769,7 +727,6 @@ class Controller:
     
     
     # Eigene Route Plot Funktionen aus OSMNX angepasst mit Plot Label und draw_and_flash option!
-    #ox.plot_graph_route(self.graph, route, ax=self.ui.canvas.axes, route_color=self.route_color, route_linewidth=self.route_linewidth, orig_dest_size=self.orig_dest_size,show=False,route_alpha=1)
     def plot_graph_route(
         self,
         G,
@@ -780,8 +737,7 @@ class Controller:
         route_alpha=0.5,
         orig_dest_size=100,
         route_label="route",
-        draw_and_flash=True,
-        **pgr_kwargs
+        draw_and_flush=True,
     ):
         """
         Visualize a route along a graph.
@@ -803,13 +759,11 @@ class Controller:
         ax : matplotlib axis
             if not None, plot route on this preexisting axis instead of creating a
             new fig, ax and drawing the underlying graph
-        pg_kwargs
-            keyword arguments to pass to plot_graph
-
+ 
         Returns
         -------
-        fig, ax : tuple
-            matplotlib figure, axis
+        fig, ax, plot : tuple
+            matplotlib figure, axis, line2D list
         """
 
         fig = ax.figure
@@ -835,13 +789,15 @@ class Controller:
                 # otherwise, the edge is a straight line from node to node
                 x.extend((G.nodes[u]["x"], G.nodes[v]["x"]))
                 y.extend((G.nodes[u]["y"], G.nodes[v]["y"]))
-        ax.plot(x, y, c=route_color, lw=route_linewidth, alpha=route_alpha, label=route_label)
+        
+        #plot = None
+        plot = ax.plot(x, y, c=route_color, lw=route_linewidth, alpha=route_alpha, label=route_label)
 
-        if draw_and_flash:
+        if draw_and_flush:
             fig.canvas.draw()
             fig.canvas.flush_events()
         
-        return fig, ax
+        return fig, ax, plot
     
     def plot_graph_routes(
         self,
@@ -852,8 +808,9 @@ class Controller:
         route_linewidths=4,
         route_label="route",
         route_alpha=0.5,
-        draw_and_flash=True,
-        **pgr_kwargs):
+        draw_and_flush=True,
+        orig_dest_size=0
+        ):
         """
         Visualize several routes along a graph.
 
@@ -867,13 +824,11 @@ class Controller:
             if string, 1 color for all routes. if list, the colors for each route.
         route_linewidths : int or list
             if int, 1 linewidth for all routes. if list, the linewidth for each route.
-        pgr_kwargs
-            keyword arguments to pass to plot_graph_route
 
         Returns
         -------
-        fig, ax : tuple
-            matplotlib figure, axis
+        fig, ax, plots : tuple
+            matplotlib figure, axis, lines2d list
         """
         
         # check for valid arguments
@@ -898,9 +853,10 @@ class Controller:
 
         fig = ax.figure
         
+        plots = []
         r_rc_rlw = zip(routes[0:], route_colors[0:], route_linewidths[0:])
         for route, route_color, route_linewidth in r_rc_rlw:
-            fig, ax = self.plot_graph_route(
+            fig, ax, plot = self.plot_graph_route(
                 G,
                 route=route,
                 route_color=route_color,
@@ -908,15 +864,16 @@ class Controller:
                 ax=ax,
                 route_alpha=route_alpha,
                 route_label=route_label,
-                draw_and_flash=False,
-                orig_dest_size=0,
+                draw_and_flush=False,
+                orig_dest_size=orig_dest_size,
             )
+            plots.append(plot[0])    
         
-        if draw_and_flash:
+        if draw_and_flush:
             fig.canvas.draw()
             fig.canvas.flush_events()
             
-        return fig, ax
+        return fig, ax, plots
     
     def generateRoutes(self):
         
@@ -939,5 +896,10 @@ class Controller:
         print("Pfade erstellt")
         self.ui.slider_Steps.setMaximum(len(self.besuchte_routen)+1)
         self.ui.label_steps.setText(f"Schritte: {0} von {len(self.besuchte_routen)+1}")
-        print(self.besuchte_routen)
-        print(self.found_path)
+        #print(self.besuchte_routen)
+        #print(self.found_path)
+    
+    def route_before_recolor(self,step,color):
+        if (step) in self.plot_steps:
+            for line in self.plot_steps[step]:
+                line.set_color(color)
