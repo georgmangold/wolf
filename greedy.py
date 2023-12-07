@@ -56,12 +56,12 @@ def greedy(graph, start, target, metric='0', weight='length'):
             if cost.get(adjacent, float('inf')) > new_cost:
                 parent[adjacent] = vertex
                 
+                cost[adjacent] = new_cost
+
                 if adjacent == target:
                     matrix.append(inner_array)
                     return matrix, make_path(parent, target)
                 
-                cost[adjacent] = new_cost
-
                 h = heuristik(graph,adjacent,target)
                 todo.put((h, next(counter), adjacent))
         

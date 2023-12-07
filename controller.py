@@ -896,12 +896,10 @@ class Controller:
         
         if self.algo == "Dijkstra":
             print("Dijkstra")
-            parent, self.besuchte_routen = dijkstra.dijkstra(self.graph, self.start, self.end, self.ui.checkbox_target.isChecked())
-            self.found_path = dijkstra.make_path(parent, self.end)
+            self.besuchte_routen, self.found_path = dijkstra.dijkstra(self.graph, self.start, self.end, self.ui.checkbox_target.isChecked(), self.weight)
 
         elif self.algo == "Greedy":
             print("Greedy")
-            #self.besuchte_routen, self.found_path = greedy(self.graph, self.start, self.end)
             self.besuchte_routen, self.found_path = greedy(self.graph, self.start, self.end, metric=self.heuristik, weight=self.weight)
 
         elif self.algo == "A*":
