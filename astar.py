@@ -4,7 +4,7 @@ import osmnx as ox
 
 from itertools import count
 
-def astar(graph, start, target, metric='0', weight='length'):
+def astar(graph, start, target, metric='0', weight='length', **kwargs):
     '''
     void aStar (Graph g, Vertex s , Vertex t) {
         PriorityQueue openList ; // Open List wird als Prioritätsliste realisiert und
