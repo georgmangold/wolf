@@ -13,7 +13,8 @@ from svgpathtools import svg2paths
 from svgpath2mpl import parse_path
 
 import dijkstra
-
+from greedy import greedy
+from astar import astar
 
 class Controller:
     def __init__(self):
@@ -25,7 +26,7 @@ class Controller:
         self.nodes_beschriftung = "Keine Knotenbeschriftung" #
         self.weight="length"
         self.algo = 'Dijkstra'
-
+        self.heuristik = '0'
         #### Noch nicht in GUI ####
         ox.settings.use_cache=True
         ox.settings.log_console=True
@@ -880,24 +881,36 @@ class Controller:
         self.update_slider_Steps(0)
         
         self.algo = self.get_checked_radio_button(self.ui.groupbox_algo).text()
-
+        
+        weight = self.get_checked_radio_button(self.ui.groupbox_weight).text()
+        match weight:
+            case 'Länge': self.weight = 'length'
+            case 'Dauer': self.weight = 'travel_time'
+            
+        heuristik = self.get_checked_radio_button(self.ui.groupbox_heuristic).text()
+        match heuristik:
+            case '0': self.heuristik = '0'
+            case 'Euclidean': self.heuristik = 'euklid'
+            case 'Euclidean²': self.heuristik = 'eklid_quadrat'
+            case 'Manhattan': self.heuristik = 'manhattan'
+        
         if self.algo == "Dijkstra":
-           parent, self.besuchte_routen = dijkstra.dijkstra(self.graph, self.start, self.end, self.ui.checkbox_target.isChecked())
-           self.found_path = dijkstra.make_path(parent, self.end)
+            print("Dijkstra")
+            self.besuchte_routen, self.found_path = dijkstra.dijkstra(self.graph, self.start, self.end, self.ui.checkbox_target.isChecked(), self.weight)
+
         elif self.algo == "Greedy":
-            print("Greedy not yet implemented")
-            self.besuchte_routen = []
-            self.found_path = []
+            print("Greedy")
+            self.besuchte_routen, self.found_path = greedy(self.graph, self.start, self.end, metric=self.heuristik, weight=self.weight)
+
         elif self.algo == "A*":
-            print("A* not yet implemented")
-            self.besuchte_routen = []
-            self.found_path = []
+            print("A*")
+            self.besuchte_routen, self.found_path = astar(self.graph, self.start, self.end, metric=self.heuristik, weight=self.weight)
         
         print("Pfade erstellt")
         self.ui.slider_Steps.setMaximum(len(self.besuchte_routen)+1)
         self.ui.label_steps.setText(f"Schritte: {0} von {len(self.besuchte_routen)+1}")
         #print(self.besuchte_routen)
-        #print(self.found_path)
+        print(self.found_path)
     
     def route_before_recolor(self,step,color):
         if (step) in self.plot_steps:

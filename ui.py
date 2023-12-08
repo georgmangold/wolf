@@ -317,9 +317,9 @@ class UI(QMainWindow):
         layout_algo.addWidget(self.groupbox_algo)
 
         # Kantengewichtung
-        groupbox_weight = QGroupBox("Kantengewichtung:")
+        self.groupbox_weight = QGroupBox("Kantengewichtung:")
         radio_layout_weight = QHBoxLayout()
-        groupbox_weight.setLayout(radio_layout_weight)
+        self.groupbox_weight.setLayout(radio_layout_weight)
 
         self.radio_weight_length = QRadioButton("Länge")
         self.radio_weight_length.setObjectName('radio_weight_length')
@@ -330,7 +330,7 @@ class UI(QMainWindow):
         radio_layout_weight.addWidget(self.radio_weight_duration)
         radio_layout_weight.addStretch()
 
-        layout_algo.addWidget(groupbox_weight)
+        layout_algo.addWidget(self.groupbox_weight)
 
         # Zusatzeinstellungen
         self.groupbox_add = QGroupBox("Zusatzeinstellungen:")
