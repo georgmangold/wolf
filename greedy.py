@@ -42,7 +42,7 @@ def greedy(graph, start, target, metric='0', weight='length'):
         visited.add(vertex)
 
         if vertex == target:
-            return matrix, make_path(parent, t)
+            return matrix, make_path(parent, target)
         
         for adjacent,_ in graph._adj[vertex].items():
 
