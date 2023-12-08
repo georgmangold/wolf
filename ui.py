@@ -188,6 +188,12 @@ class UI(QMainWindow):
         self.slider_Steps.setTracking(False)
         slider_layout.addWidget(self.slider_Steps)
 
+
+        # Checkbox um Slider optional am Ende stehen zu lassen
+        self.checkbox_slider_steps_lock = QCheckBox("Ende fixieren")
+        self.checkbox_slider_steps_lock.setObjectName("checkbox_slider_steps_lock")
+        slider_layout.addWidget(self.checkbox_slider_steps_lock)
+
         #slider_layout.addStretch()
 
         left_layout.addLayout(slider_layout)

@@ -911,6 +911,9 @@ class Controller:
         self.ui.label_steps.setText(f"Schritte: {0} von {len(self.besuchte_routen)+1}")
         #print(self.besuchte_routen)
         print(self.found_path)
+        
+        if self.ui.checkbox_slider_steps_lock.isChecked():
+            self.update_slider_Steps(len(self.besuchte_routen)+1)
     
     def route_before_recolor(self,step,color):
         if (step) in self.plot_steps:
