@@ -288,7 +288,33 @@ class UI(QMainWindow):
         self.btn_auswahl.setObjectName('btn_auswahl')
 
         layout_map.addWidget(label_auswahl)
-        layout_map.addWidget(self.btn_auswahl)
+        layout_map.addWidget(self.btn_auswahl)    
+                
+        line = QFrame()
+        line.setFrameShape(QFrame.HLine)
+        line.setFrameShadow(QFrame.Sunken)
+        layout_map.addWidget(line)
+
+        ## Graph von und zu GraphML File
+        label_map_graphml = QLabel("Graph aus GraphML File")
+        label_map_graphml.setMaximumHeight(20)
+        self.lineedit_graphml_path = QLineEdit()
+        self.lineedit_graphml_path.setPlaceholderText("Pfad zur GraphML File .graphml")
+
+        self.checkbox_gephi = QCheckBox("NUR für Gephi speichern (Workaround)")
+        self.checkbox_gephi.setObjectName("checkbox_gephi")
+
+        self.btn_save_graphml = QPushButton("Speichere GraphML")
+        self.btn_save_graphml.setObjectName('btn_save_graphml')
+
+        self.btn_load_graphml = QPushButton("Lade GraphML")
+        self.btn_load_graphml.setObjectName('btn_load_graphml')
+        
+        layout_map.addWidget(label_map_graphml)
+        layout_map.addWidget(self.lineedit_graphml_path)
+        layout_map.addWidget(self.checkbox_gephi)
+        layout_map.addWidget(self.btn_save_graphml)
+        layout_map.addWidget(self.btn_load_graphml)
 
         layout_map.addStretch()
 
