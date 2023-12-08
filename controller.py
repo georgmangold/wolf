@@ -16,6 +16,8 @@ import dijkstra
 from greedy import greedy
 from astar import astar
 
+from os.path import isfile
+
 class Controller:
     def __init__(self):
         self.ui = UI()
@@ -124,15 +126,16 @@ class Controller:
         #self.ui.slider_Steps.sliderReleased.connect(self.slider_Steps_sliderReleased)
         self.ui.slider_Steps.sliderMoved.connect(self.slider_Steps_moved)
         
+        self.ui.btn_save_graphml.clicked.connect(self.save_graphml)
+        self.ui.btn_load_graphml.clicked.connect(self.load_graphml)
+        
         ## Bbox vom Start
         north, south, east, west = 50.32942276889266, 50.32049083973944, 11.944606304168701, 11.929510831832886
         ## north, south, east, west = 50.3277, 50.32049083973944, 11.9474, 11.929510831832886
         
-        ## create network from that bounding box
-        #self.graph = ox.graph_from_bbox(north, south, east, west, network_type=self.network_type)
-
-        #self.plotStreetGraph()
-        self.graph_thread_bbbox(north, south, east, west, self.network_type)
+        ## create network from file or that bounding box
+        if not self.load_graphml(None,'data/haw_tankstelle.graphml'):
+            self.graph_thread_bbbox(north, south, east, west, self.network_type)
 
     def show_main_window(self):
         self.ui.show()
@@ -931,3 +934,32 @@ class Controller:
         # Start und Ziel wurden gesetzt! Routen erstellen!
         if self.start is not None and self.end is not None:
             self.generateRoutes()
+           
+            
+    def save_graphml(self, test=False, filepath=""):
+        if filepath=="":
+            filepath = self.ui.lineedit_graphml_path.text()
+        if filepath != '' and self.graph is not None:
+            if not filepath.endswith('.graphml'):
+                filepath += '.graphml'
+            ox.io.save_graphml(self.graph, filepath=filepath, gephi=self.ui.checkbox_gephi.isChecked(), encoding='utf-8')
+            print("Datei gespeichert: ", filepath)
+            
+    def load_graphml(self, test=False, filepath=""):
+        if filepath=="":
+            filepath = self.ui.lineedit_graphml_path.text()
+        if filepath != '':
+            if not (filepath.endswith('.graphml')):
+                filepath += '.graphml'
+            if isfile(filepath):
+                graph = ox.io.load_graphml(filepath)
+                if "crs" in graph.graph:
+                    self.graph = graph
+                    self.plotStreetGraph()
+                    print("GraphML geladen: ",filepath)
+                    return True
+                else:
+                    print("GraphML hat falsches Format. Gephi Export?")
+            else:
+                print("Datei nicht gefunden: ",filepath)
+        return False
