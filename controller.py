@@ -29,6 +29,7 @@ class Controller:
         self.weight="length"
         self.algo = 'Dijkstra'
         self.heuristik = 'euklid'
+        self.heuristik = 'euklid'
         #### Noch nicht in GUI ####
         ox.settings.use_cache=True
         ox.settings.log_console=True
