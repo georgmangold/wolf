@@ -361,7 +361,7 @@ class UI(QMainWindow):
         self.radio_euclidsquare.setObjectName("radio_euclidsquare")
         self.radio_manhattan = QRadioButton("Manhattan")
         self.radio_manhattan.setObjectName("radio_manhattan")
-        self.radio_null.setChecked(True)
+        self.radio_euclid.setChecked(True)
         layout_add_boxes.addWidget(self.radio_null)
         layout_add_boxes.addWidget(self.radio_euclid)
         layout_add_boxes.addWidget(self.radio_euclidsquare)
