@@ -978,6 +978,9 @@ class Controller:
             ox.io.save_graphml(self.graph, filepath=self.filepath, gephi=self.gephi, encoding='utf-8')
             print("Datei gespeichert: ", self.filepath)
             self.finished.emit()
+            
+        def setSpeed(self, velocity):
+            pass
                    
     def load_graphml(self, test=False, filepath=""):
         
