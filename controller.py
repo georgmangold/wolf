@@ -921,29 +921,99 @@ class Controller:
                 line.set_color(color)             
             
     def save_graphml(self, test=False, filepath=""):
+        
+        if self.thread.isRunning():
+            return
+        
         if filepath=="":
             filepath = self.ui.lineedit_graphml_path.text()
         if filepath != '' and self.graph is not None:
             if not filepath.endswith('.graphml'):
                 filepath += '.graphml'
-            ox.io.save_graphml(self.graph, filepath=filepath, gephi=self.ui.checkbox_gephi.isChecked(), encoding='utf-8')
-            print("Datei gespeichert: ", filepath)
             
+            self.thread = QThread()
+            self.worker = self.SaveGraphMLWorker(graph=self.graph, filepath=filepath, gephi=self.ui.checkbox_gephi.isChecked())
+
+            self.worker.moveToThread(self.thread)
+
+            self.thread.started.connect(self.worker.run)
+            self.worker.finished.connect(self.thread.quit)
+            self.worker.finished.connect(self.worker.deleteLater)
+            self.thread.finished.connect(self.thread.deleteLater)
+            self.thread.finished.connect(self.thread_finished)
+
+            self.progressDialog = QProgressDialog("Bitte warten...\nGraph wird gespeichert.", None, 0, 0)
+            self.thread.started.connect(self.progressDialog.show)
+            self.thread.finished.connect(self.progressDialog.hide)
+            
+            self.thread.start()
+    
+    class SaveGraphMLWorker(QObject):
+        
+        def __init__(self, graph, filepath, gephi):
+            super().__init__()
+            self.graph = graph
+            self.filepath = filepath
+            self.gephi = gephi
+        
+        finished = Signal()
+        
+        def run(self):
+            ox.io.save_graphml(self.graph, filepath=self.filepath, gephi=self.gephi, encoding='utf-8')
+            print("Datei gespeichert: ", self.filepath)
+            self.finished.emit()
+                   
     def load_graphml(self, test=False, filepath=""):
+        
+        if self.thread.isRunning():
+            return
+        
         if filepath=="":
             filepath = self.ui.lineedit_graphml_path.text()
         if filepath != '':
             if not (filepath.endswith('.graphml')):
                 filepath += '.graphml'
             if isfile(filepath):
-                graph = ox.io.load_graphml(filepath)
-                if "crs" in graph.graph:
-                    self.graph = graph
-                    self.plotStreetGraph()
-                    print("GraphML geladen: ",filepath)
-                    return True
-                else:
-                    print("GraphML hat falsches Format. Gephi Export?")
+                
+                self.thread = QThread()
+                self.worker = self.GraphWorkerGraphML(filepath)
+                self.worker.moveToThread(self.thread)
+
+                self.thread.started.connect(self.worker.run)
+                self.worker.finished.connect(self.thread.quit)
+                self.worker.finished.connect(self.worker.deleteLater)
+                self.thread.finished.connect(self.thread.deleteLater)
+                self.thread.finished.connect(self.thread_finished)
+                self.worker.graphed.connect(self.set_graph)
+
+                self.progressDialog = QProgressDialog("Bitte warten...\nGraph wird geladen.", None, 0, 0)
+                self.thread.started.connect(self.progressDialog.show)
+                self.thread.finished.connect(self.progressDialog.hide)
+                
+                self.thread.start()
+                
             else:
                 print("Datei nicht gefunden: ",filepath)
         return False
+            
+    class GraphWorkerGraphML(QObject):
+        
+        def __init__(self, filepath):
+            super().__init__()
+            self.filepath = filepath
+        
+        graphed = Signal(object)
+        finished = Signal()
+        
+        def run(self):
+            graph = ox.io.load_graphml(self.filepath)
+            if "crs" in graph.graph:
+                print("GraphML geladen: ",self.filepath)
+                self.graphed.emit(graph)
+            else:
+                print("GraphML hat falsches Format. Gephi Export?")
+                
+            self.finished.emit()
+        
+        def setSpeed(self, velocity):
+            pass
