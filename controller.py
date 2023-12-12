@@ -563,6 +563,7 @@ class Controller:
     
     def thread_finished(self):
         self.thread = QThread()
+        self.worker = None
     
     def update_slider_Steps(self, current_step):
         if self.mutex_button_press.tryLock():
