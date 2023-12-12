@@ -188,6 +188,12 @@ class UI(QMainWindow):
         self.slider_Steps.setTracking(False)
         slider_layout.addWidget(self.slider_Steps)
 
+
+        # Checkbox um Slider optional am Ende stehen zu lassen
+        self.checkbox_slider_steps_lock = QCheckBox("Ende fixieren")
+        self.checkbox_slider_steps_lock.setObjectName("checkbox_slider_steps_lock")
+        slider_layout.addWidget(self.checkbox_slider_steps_lock)
+
         #slider_layout.addStretch()
 
         left_layout.addLayout(slider_layout)
@@ -381,7 +387,7 @@ class UI(QMainWindow):
         self.radio_euclidsquare.setObjectName("radio_euclidsquare")
         self.radio_manhattan = QRadioButton("Manhattan")
         self.radio_manhattan.setObjectName("radio_manhattan")
-        self.radio_null.setChecked(True)
+        self.radio_euclid.setChecked(True)
         layout_add_boxes.addWidget(self.radio_null)
         layout_add_boxes.addWidget(self.radio_euclid)
         layout_add_boxes.addWidget(self.radio_euclidsquare)

@@ -28,7 +28,8 @@ class Controller:
         self.nodes_beschriftung = "Keine Knotenbeschriftung" #
         self.weight="length"
         self.algo = 'Dijkstra'
-        self.heuristik = '0'
+        self.heuristik = 'euklid'
+        self.heuristik = 'euklid'
         #### Noch nicht in GUI ####
         ox.settings.use_cache=True
         ox.settings.log_console=True
@@ -109,7 +110,16 @@ class Controller:
         self.ui.radio_dijkstra.clicked.connect(self.update_dijkstra)
         self.ui.radio_greedy.clicked.connect(self.update_greedy)
         self.ui.radio_astar.clicked.connect(self.update_astar)
-
+        
+        # Route neuberechnen wenn Algo Einstellungen geändert werden
+        self.ui.checkbox_target.clicked.connect(self.check_generate_routes)
+        self.ui.radio_weight_length.clicked.connect(self.check_generate_routes)
+        self.ui.radio_weight_duration.clicked.connect(self.check_generate_routes)
+        self.ui.radio_null.clicked.connect(self.check_generate_routes)
+        self.ui.radio_euclid.clicked.connect(self.check_generate_routes)
+        self.ui.radio_euclidsquare.clicked.connect(self.check_generate_routes)
+        self.ui.radio_manhattan.clicked.connect(self.check_generate_routes)
+        
         self.ui.slider_velocity.valueChanged.connect(self.slider_velocity_value_changed)
         
         self.ui.slider_Steps.valueChanged.connect(self.slider_Steps_value_changed)
@@ -136,25 +146,24 @@ class Controller:
         self.ui.image_widget.setPixmap(QtGui.QPixmap("gfx/dijkstra.png"))
         self.ui.groupbox_add.show()
         self.ui.groupbox_heuristic.hide()
-        # Start und Ziel wurden gesetzt! Routen erstellen!
-        if self.start is not None and self.end is not None:
-            self.generateRoutes()
+        
+        self.check_generate_routes()
 
     def update_greedy(self):
         self.ui.image_widget.setPixmap(QtGui.QPixmap("gfx/greedy.png"))
         self.ui.groupbox_add.hide()
         self.ui.groupbox_heuristic.show()
-        # Start und Ziel wurden gesetzt! Routen erstellen!
-        if self.start is not None and self.end is not None:
-            self.generateRoutes()
+       
+        self.check_generate_routes()
+
         
     def update_astar(self):
         self.ui.image_widget.setPixmap(QtGui.QPixmap("gfx/astern.png"))
         self.ui.groupbox_add.hide()
         self.ui.groupbox_heuristic.show()
-        # Start und Ziel wurden gesetzt! Routen erstellen!
-        if self.start is not None and self.end is not None:
-            self.generateRoutes()
+        
+        self.check_generate_routes()
+
 
     def slider_velocity_value_changed(self, value):
         value /= 100
@@ -303,9 +312,8 @@ class Controller:
             self.fig.canvas.draw()
             self.fig.canvas.flush_events()
             
-            # Start und Ziel wurden gesetzt! Routen erstellen!
-            if self.start is not None and self.end is not None:
-                self.generateRoutes()
+            self.check_generate_routes()
+
 
 
     # Karten Buttons:
@@ -915,12 +923,20 @@ class Controller:
         self.ui.label_steps.setText(f"Schritte: {0} von {len(self.besuchte_routen)+1}")
         #print(self.besuchte_routen)
         print(self.found_path)
+        
+        if self.ui.checkbox_slider_steps_lock.isChecked():
+            self.update_slider_Steps(len(self.besuchte_routen)+1)
     
     def route_before_recolor(self,step,color):
         if (step) in self.plot_steps:
             for line in self.plot_steps[step]:
-                line.set_color(color)             
-            
+                line.set_color(color)
+                
+    def check_generate_routes(self):
+        # Start und Ziel wurden gesetzt! Routen erstellen!
+        if self.start is not None and self.end is not None:
+            self.generateRoutes()
+         
     def save_graphml(self, test=False, filepath=""):
         
         if self.thread.isRunning():
