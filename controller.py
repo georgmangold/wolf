@@ -936,8 +936,7 @@ class Controller:
         # Start und Ziel wurden gesetzt! Routen erstellen!
         if self.start is not None and self.end is not None:
             self.generateRoutes()
-           
-            
+         
     def save_graphml(self, test=False, filepath=""):
         
         if self.thread.isRunning():
