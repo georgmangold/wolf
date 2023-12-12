@@ -16,6 +16,8 @@ from dijkstra import dijkstra
 from greedy import greedy
 from astar import astar
 
+from os.path import isfile
+
 class Controller:
     def __init__(self):
         self.ui = UI()
@@ -26,7 +28,8 @@ class Controller:
         self.nodes_beschriftung = "Keine Knotenbeschriftung" #
         self.weight="length"
         self.algo = 'Dijkstra'
-        self.heuristik = '0'
+        self.heuristik = 'euklid'
+        self.heuristik = 'euklid'
         #### Noch nicht in GUI ####
         ox.settings.use_cache=True
         ox.settings.log_console=True
@@ -108,7 +111,16 @@ class Controller:
         self.ui.radio_dijkstra.clicked.connect(self.update_dijkstra)
         self.ui.radio_greedy.clicked.connect(self.update_greedy)
         self.ui.radio_astar.clicked.connect(self.update_astar)
-
+        
+        # Route neuberechnen wenn Algo Einstellungen geändert werden
+        self.ui.checkbox_target.clicked.connect(self.check_generate_routes)
+        self.ui.radio_weight_length.clicked.connect(self.check_generate_routes)
+        self.ui.radio_weight_duration.clicked.connect(self.check_generate_routes)
+        self.ui.radio_null.clicked.connect(self.check_generate_routes)
+        self.ui.radio_euclid.clicked.connect(self.check_generate_routes)
+        self.ui.radio_euclidsquare.clicked.connect(self.check_generate_routes)
+        self.ui.radio_manhattan.clicked.connect(self.check_generate_routes)
+        
         self.ui.slider_velocity.valueChanged.connect(self.slider_velocity_value_changed)
         
         self.ui.slider_Steps.valueChanged.connect(self.slider_Steps_value_changed)
@@ -116,15 +128,16 @@ class Controller:
         #self.ui.slider_Steps.sliderReleased.connect(self.slider_Steps_sliderReleased)
         self.ui.slider_Steps.sliderMoved.connect(self.slider_Steps_moved)
         
+        self.ui.btn_save_graphml.clicked.connect(self.save_graphml)
+        self.ui.btn_load_graphml.clicked.connect(self.load_graphml)
+        
         ## Bbox vom Start
         north, south, east, west = 50.32942276889266, 50.32049083973944, 11.944606304168701, 11.929510831832886
         ## north, south, east, west = 50.3277, 50.32049083973944, 11.9474, 11.929510831832886
         
-        ## create network from that bounding box
-        #self.graph = ox.graph_from_bbox(north, south, east, west, network_type=self.network_type)
-
-        #self.plotStreetGraph()
-        self.graph_thread_bbbox(north, south, east, west, self.network_type)
+        ## create network from file or that bounding box
+        if not self.load_graphml(None,'data/haw_tankstelle.graphml'):
+            self.graph_thread_bbbox(north, south, east, west, self.network_type)
 
     def show_main_window(self):
         self.ui.show()
@@ -134,25 +147,24 @@ class Controller:
         self.ui.image_widget.setPixmap(QtGui.QPixmap("gfx/dijkstra.png"))
         self.ui.groupbox_add.show()
         self.ui.groupbox_heuristic.hide()
-        # Start und Ziel wurden gesetzt! Routen erstellen!
-        if self.start is not None and self.end is not None:
-            self.generateRoutes()
+        
+        self.check_generate_routes()
 
     def update_greedy(self):
         self.ui.image_widget.setPixmap(QtGui.QPixmap("gfx/greedy.png"))
         self.ui.groupbox_add.hide()
         self.ui.groupbox_heuristic.show()
-        # Start und Ziel wurden gesetzt! Routen erstellen!
-        if self.start is not None and self.end is not None:
-            self.generateRoutes()
+       
+        self.check_generate_routes()
+
         
     def update_astar(self):
         self.ui.image_widget.setPixmap(QtGui.QPixmap("gfx/astern.png"))
         self.ui.groupbox_add.hide()
         self.ui.groupbox_heuristic.show()
-        # Start und Ziel wurden gesetzt! Routen erstellen!
-        if self.start is not None and self.end is not None:
-            self.generateRoutes()
+        
+        self.check_generate_routes()
+
 
     def slider_velocity_value_changed(self, value):
         value /= 100
@@ -317,9 +329,8 @@ class Controller:
             self.fig.canvas.draw()
             self.fig.canvas.flush_events()
             
-            # Start und Ziel wurden gesetzt! Routen erstellen!
-            if self.start is not None and self.end is not None:
-                self.generateRoutes()
+            self.check_generate_routes()
+
 
 
     # Karten Buttons:
@@ -570,6 +581,7 @@ class Controller:
     
     def thread_finished(self):
         self.thread = QThread()
+        self.worker = None
     
     def update_slider_Steps(self, current_step):
         if self.mutex_button_press.tryLock():
@@ -944,14 +956,125 @@ class Controller:
         self.ui.slider_Steps.setMaximum(len(self.besuchte_routen)+1)
         self.ui.label_steps.setText(f"Schritte: {0} von {len(self.besuchte_routen)+1}")
         #print(self.besuchte_routen)
+
         if len(self.found_path)>0:
             print("Pfade erstellt:")
             print(self.found_path)
         else:
             print("Keine Route gefunden!")
+        
+        if self.ui.checkbox_slider_steps_lock.isChecked():
+            self.update_slider_Steps(len(self.besuchte_routen)+1)
+
     
     def route_before_recolor(self,step,color,alpha):
         if (step) in self.plot_steps:
             for line in self.plot_steps[step]:
                 line.set_color(color)
                 line.set_alpha(alpha)
+                
+    def check_generate_routes(self):
+        # Start und Ziel wurden gesetzt! Routen erstellen!
+        if self.start is not None and self.end is not None:
+            self.generateRoutes()
+         
+    def save_graphml(self, test=False, filepath=""):
+        
+        if self.thread.isRunning():
+            return
+        
+        if filepath=="":
+            filepath = self.ui.lineedit_graphml_path.text()
+        if filepath != '' and self.graph is not None:
+            if not filepath.endswith('.graphml'):
+                filepath += '.graphml'
+            
+            self.thread = QThread()
+            self.worker = self.SaveGraphMLWorker(graph=self.graph, filepath=filepath, gephi=self.ui.checkbox_gephi.isChecked())
+
+            self.worker.moveToThread(self.thread)
+
+            self.thread.started.connect(self.worker.run)
+            self.worker.finished.connect(self.thread.quit)
+            self.worker.finished.connect(self.worker.deleteLater)
+            self.thread.finished.connect(self.thread.deleteLater)
+            self.thread.finished.connect(self.thread_finished)
+
+            self.progressDialog = QProgressDialog("Bitte warten...\nGraph wird gespeichert.", None, 0, 0)
+            self.thread.started.connect(self.progressDialog.show)
+            self.thread.finished.connect(self.progressDialog.hide)
+            
+            self.thread.start()
+    
+    class SaveGraphMLWorker(QObject):
+        
+        def __init__(self, graph, filepath, gephi):
+            super().__init__()
+            self.graph = graph
+            self.filepath = filepath
+            self.gephi = gephi
+        
+        finished = Signal()
+        
+        def run(self):
+            ox.io.save_graphml(self.graph, filepath=self.filepath, gephi=self.gephi, encoding='utf-8')
+            print("Datei gespeichert: ", self.filepath)
+            self.finished.emit()
+            
+        def setSpeed(self, velocity):
+            pass
+                   
+    def load_graphml(self, test=False, filepath=""):
+        
+        if self.thread.isRunning():
+            return
+        
+        if filepath=="":
+            filepath = self.ui.lineedit_graphml_path.text()
+        if filepath != '':
+            if not (filepath.endswith('.graphml')):
+                filepath += '.graphml'
+            if isfile(filepath):
+                
+                self.thread = QThread()
+                self.worker = self.GraphWorkerGraphML(filepath)
+                self.worker.moveToThread(self.thread)
+
+                self.thread.started.connect(self.worker.run)
+                self.worker.finished.connect(self.thread.quit)
+                self.worker.finished.connect(self.worker.deleteLater)
+                self.thread.finished.connect(self.thread.deleteLater)
+                self.thread.finished.connect(self.thread_finished)
+                self.worker.graphed.connect(self.set_graph)
+
+                self.progressDialog = QProgressDialog("Bitte warten...\nGraph wird geladen.", None, 0, 0)
+                self.thread.started.connect(self.progressDialog.show)
+                self.thread.finished.connect(self.progressDialog.hide)
+                
+                self.thread.start()
+                
+            else:
+                print("Datei nicht gefunden: ",filepath)
+        return False
+            
+    class GraphWorkerGraphML(QObject):
+        
+        def __init__(self, filepath):
+            super().__init__()
+            self.filepath = filepath
+        
+        graphed = Signal(object)
+        finished = Signal()
+        
+        def run(self):
+            graph = ox.io.load_graphml(self.filepath)
+            if "crs" in graph.graph:
+                print("GraphML geladen: ",self.filepath)
+                self.graphed.emit(graph)
+            else:
+                print("GraphML hat falsches Format. Gephi Export?")
+                
+            self.finished.emit()
+        
+        def setSpeed(self, velocity):
+            pass

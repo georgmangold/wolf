@@ -188,6 +188,12 @@ class UI(QMainWindow):
         self.slider_Steps.setTracking(False)
         slider_layout.addWidget(self.slider_Steps)
 
+
+        # Checkbox um Slider optional am Ende stehen zu lassen
+        self.checkbox_slider_steps_lock = QCheckBox("Ende fixieren")
+        self.checkbox_slider_steps_lock.setObjectName("checkbox_slider_steps_lock")
+        slider_layout.addWidget(self.checkbox_slider_steps_lock)
+
         #slider_layout.addStretch()
 
         left_layout.addLayout(slider_layout)
@@ -288,7 +294,33 @@ class UI(QMainWindow):
         self.btn_auswahl.setObjectName('btn_auswahl')
 
         layout_map.addWidget(label_auswahl)
-        layout_map.addWidget(self.btn_auswahl)
+        layout_map.addWidget(self.btn_auswahl)    
+                
+        line = QFrame()
+        line.setFrameShape(QFrame.HLine)
+        line.setFrameShadow(QFrame.Sunken)
+        layout_map.addWidget(line)
+
+        ## Graph von und zu GraphML File
+        label_map_graphml = QLabel("Graph aus GraphML File")
+        label_map_graphml.setMaximumHeight(20)
+        self.lineedit_graphml_path = QLineEdit()
+        self.lineedit_graphml_path.setPlaceholderText("Pfad zur GraphML File .graphml")
+
+        self.checkbox_gephi = QCheckBox("NUR für Gephi speichern (Workaround)")
+        self.checkbox_gephi.setObjectName("checkbox_gephi")
+
+        self.btn_save_graphml = QPushButton("Speichere GraphML")
+        self.btn_save_graphml.setObjectName('btn_save_graphml')
+
+        self.btn_load_graphml = QPushButton("Lade GraphML")
+        self.btn_load_graphml.setObjectName('btn_load_graphml')
+        
+        layout_map.addWidget(label_map_graphml)
+        layout_map.addWidget(self.lineedit_graphml_path)
+        layout_map.addWidget(self.checkbox_gephi)
+        layout_map.addWidget(self.btn_save_graphml)
+        layout_map.addWidget(self.btn_load_graphml)
 
         layout_map.addStretch()
 
@@ -355,7 +387,7 @@ class UI(QMainWindow):
         self.radio_euclidsquare.setObjectName("radio_euclidsquare")
         self.radio_manhattan = QRadioButton("Manhattan")
         self.radio_manhattan.setObjectName("radio_manhattan")
-        self.radio_null.setChecked(True)
+        self.radio_euclid.setChecked(True)
         layout_add_boxes.addWidget(self.radio_null)
         layout_add_boxes.addWidget(self.radio_euclid)
         layout_add_boxes.addWidget(self.radio_euclidsquare)
