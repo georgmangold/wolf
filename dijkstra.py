@@ -2,7 +2,7 @@ from queue import PriorityQueue
 import osmnx as ox
 from itertools import count
 
-def dijkstra(graph, start, target, abort=True, weight='length'):
+def dijkstra(graph, start, target, abort=True, weight='length', **kwargs):
 
     visited = set()
     cost = {start: 0}

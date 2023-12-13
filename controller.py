@@ -12,7 +12,7 @@ import matplotlib
 from svgpathtools import svg2paths
 from svgpath2mpl import parse_path
 
-import dijkstra
+from dijkstra import dijkstra
 from greedy import greedy
 from astar import astar
 
@@ -56,13 +56,14 @@ class Controller:
         self.color_new_steps = "red"
         self.color_steps = "blue"
         self.steps_linewidth = 2
-        self.steps_alpha = 0.5
+        self.steps_alpha = 0.25
+        self.new_steps_alpha = 1
         ##### Variablen #####
         self.start = None
         self.start_point = None
         self.end = None
         self.end_point = None
-        self.routen_punkte = []
+        self.routen_punkte = {}
         
         self.plot_steps = {}
                 
@@ -222,7 +223,7 @@ class Controller:
         self.start_point = None
         self.end = None
         self.end_point = None
-        self.routen_punkte = []
+        self.routen_punkte = {}
         
         self.ui.canvas.axes.cla()
         #self.ui.canvas.axes.figure.clf()
@@ -305,9 +306,25 @@ class Controller:
             
             elif (event.button == 2):
                 #Mittelklick Routen
-                points = self.ax.plot(x, y, color=self.routenmarkierung_color, marker=self.marker, markersize=100, zorder=2.5, label="route_punkte")
-                self.routen_punkte.append(node)
-                print(self.routen_punkte)
+                # Routen Punkt gibt es schon löschen
+                if node in self.routen_punkte:
+                    self.routen_punkte[node]['point'].remove()
+                    self.routen_punkte[node]['annotation'].remove()
+                    self.routen_punkte.pop(node)
+                    i = 1 # Nummerierung wieder anpassen
+                    for item in self.routen_punkte.values():
+                        item['annotation'].set_text(i)
+                        i+=1
+                else: # Neuer Routen Punk
+                    points = self.ax.plot(x, y, color=self.routenmarkierung_color, marker=self.marker, markersize=50, zorder=2.5, label="route_punkte")
+                    
+                    text = len(self.routen_punkte)+1
+                    annotation = self.ax.annotate(text, (x, y), c="black", xytext=(-2.5, 1.5), textcoords='offset points')
+                    
+                    #self.routen_punkte.append(node)
+                    self.routen_punkte[node] = {}
+                    self.routen_punkte[node]['point'] = points[0]
+                    self.routen_punkte[node]['annotation'] = annotation
             
             self.fig.canvas.draw()
             self.fig.canvas.flush_events()
@@ -490,18 +507,18 @@ class Controller:
         while von < bis:
 
             # Routen davor anders färben
-            self.route_before_recolor(von, self.color_steps)
+            self.route_before_recolor(von, self.color_steps, self.steps_alpha)
             
             # Flatten Routes  
             routes = [item for sublist in routen[von:(von+1)] for item in sublist]
             #print(routes)
             anzahl = len(routes) 
             if anzahl > 1:
-                self.fig, self.ax, plots = self.plot_graph_routes(self.graph, routes, ax=self.ui.canvas.axes, route_colors=self.color_new_steps, route_linewidths=self.steps_linewidth, orig_dest_size=0,route_label=f'{von+1}', route_alpha=self.steps_alpha, draw_and_flush=False)
+                self.fig, self.ax, plots = self.plot_graph_routes(self.graph, routes, ax=self.ui.canvas.axes, route_colors=self.color_new_steps, route_linewidths=self.steps_linewidth, orig_dest_size=0,route_label=f'{von+1}', route_alpha=self.new_steps_alpha, draw_and_flush=False)
                 self.plot_steps[von+1] = plots
             elif anzahl == 1:
                 routes = routes[0]
-                self.fig, self.ax, plot = self.plot_graph_route(self.graph, routes, ax=self.ui.canvas.axes, route_color=self.color_new_steps, route_linewidth=self.steps_linewidth, orig_dest_size=0,route_label=f'{von+1}', route_alpha=self.steps_alpha, draw_and_flush=False)
+                self.fig, self.ax, plot = self.plot_graph_route(self.graph, routes, ax=self.ui.canvas.axes, route_color=self.color_new_steps, route_linewidth=self.steps_linewidth, orig_dest_size=0,route_label=f'{von+1}', route_alpha=self.new_steps_alpha, draw_and_flush=False)
                 self.plot_steps[von+1] = plot
 
             von = von+1
@@ -513,7 +530,7 @@ class Controller:
         
         # Am Ende Route malen
         if von > len(self.besuchte_routen):
-            self.route_before_recolor(von, self.color_steps)
+            self.route_before_recolor(von, self.color_steps, self.steps_alpha)
             
             if self.found_path is not None and len(self.found_path)>0:
                 self.fig, self.ax, plot = self.plot_graph_route(self.graph, self.found_path, ax=self.ui.canvas.axes, route_color=self.route_color, route_linewidth=self.route_linewidth, orig_dest_size=0,route_label='route', route_alpha=self.route_alpha)    
@@ -551,7 +568,7 @@ class Controller:
             for line in lines:
                 line.remove()
         
-        self.route_before_recolor(step, self.color_new_steps)
+        self.route_before_recolor(step, self.color_new_steps, self.new_steps_alpha)
      
         self.fig.canvas.draw()
         self.fig.canvas.flush_events()
@@ -600,7 +617,7 @@ class Controller:
                     self.progress.emit(self.start)
                     sleeptime = 1 / self.velocity
                     sleep(sleeptime)
-                    
+                      
             self.finished.emit()
         
         def setSpeed(self, velocity):
@@ -906,31 +923,55 @@ class Controller:
             case 'Euclidean²': self.heuristik = 'eklid_quadrat'
             case 'Manhattan': self.heuristik = 'manhattan'
         
-        if self.algo == "Dijkstra":
-            print("Dijkstra")
-            self.besuchte_routen, self.found_path = dijkstra.dijkstra(self.graph, self.start, self.end, self.ui.checkbox_target.isChecked(), self.weight)
-
-        elif self.algo == "Greedy":
-            print("Greedy")
-            self.besuchte_routen, self.found_path = greedy(self.graph, self.start, self.end, metric=self.heuristik, weight=self.weight)
-
-        elif self.algo == "A*":
-            print("A*")
-            self.besuchte_routen, self.found_path = astar(self.graph, self.start, self.end, metric=self.heuristik, weight=self.weight)
+        match self.algo:
+            case "Dijkstra": algo = dijkstra
+            case "Greedy": algo = greedy
+            case "A*": algo = astar
         
-        print("Pfade erstellt")
+        print(self.algo)
+        print("Start: ", self.start, " Ziel: ", self.end)
+        if len(self.routen_punkte) == 0:
+            # Einfache Route
+            self.besuchte_routen, self.found_path = algo(graph=self.graph, start=self.start, target=self.end, metric=self.heuristik, weight=self.weight, abort=self.ui.checkbox_target.isChecked())
+        
+        else:
+            # Mit mehreren Routenpunkten
+            keys = list(self.routen_punkte.keys())
+            print("Routen: ",keys)
+            next_start = keys[0]
+            self.besuchte_routen, self.found_path = algo(graph=self.graph, start=self.start, target=next_start, metric=self.heuristik, weight=self.weight, abort=self.ui.checkbox_target.isChecked())
+            
+            i = 1
+            while i < len(keys):
+                print(next_start)
+                besuchte_routen, found_path = algo(graph=self.graph, start=next_start, target=keys[i], metric=self.heuristik, weight=self.weight, abort=self.ui.checkbox_target.isChecked())
+                self.besuchte_routen += besuchte_routen
+                self.found_path += found_path[1:]
+                next_start = keys[i]
+                i += 1
+            besuchte_routen, found_path = algo(graph=self.graph, start=next_start, target=self.end, metric=self.heuristik, weight=self.weight, abort=self.ui.checkbox_target.isChecked())
+            self.besuchte_routen += besuchte_routen
+            self.found_path += found_path[1:]
+                
         self.ui.slider_Steps.setMaximum(len(self.besuchte_routen)+1)
         self.ui.label_steps.setText(f"Schritte: {0} von {len(self.besuchte_routen)+1}")
         #print(self.besuchte_routen)
-        print(self.found_path)
+
+        if len(self.found_path)>0:
+            print("Pfade erstellt:")
+            print(self.found_path)
+        else:
+            print("Keine Route gefunden!")
         
         if self.ui.checkbox_slider_steps_lock.isChecked():
             self.update_slider_Steps(len(self.besuchte_routen)+1)
+
     
-    def route_before_recolor(self,step,color):
+    def route_before_recolor(self,step,color,alpha):
         if (step) in self.plot_steps:
             for line in self.plot_steps[step]:
                 line.set_color(color)
+                line.set_alpha(alpha)
                 
     def check_generate_routes(self):
         # Start und Ziel wurden gesetzt! Routen erstellen!

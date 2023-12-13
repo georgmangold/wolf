@@ -3,7 +3,7 @@ import osmnx as ox
 
 from itertools import count
 
-def greedy(graph, start, target, metric='0', weight='length'):
+def greedy(graph, start, target, metric='0', weight='length', **kwargs):
     '''
     GBFS(Graph G, Vertex s, Vertex t) { 
         PriorityQueue Q;
