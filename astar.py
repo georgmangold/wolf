@@ -46,6 +46,12 @@ def astar(graph, start, target, metric='0', weight='length', **kwargs):
     parent = {start: None}
     visited = set()
     
+    # Haben schon die Kosten anhand des aktuellen Gewichts,
+    # wollen aber immer die Länge und Dauer:
+    length = {start: 0}
+    travel_time = {start: 0}
+
+    
     while not openList.empty():
         inner_array = []
         
@@ -54,7 +60,7 @@ def astar(graph, start, target, metric='0', weight='length', **kwargs):
         visited.add(vertex)
 
         if vertex == target:
-            return matrix, make_path(parent, target)
+            return matrix, make_path(parent, target), dist.get(target, 0), length.get(target, 0), travel_time.get(target, 0)
         
         for adjacent,_ in graph._adj[vertex].items():
             
@@ -69,6 +75,10 @@ def astar(graph, start, target, metric='0', weight='length', **kwargs):
                 h = heuristik(graph, adjacent, target)
                 openList.put((dist[adjacent] + h, next(counter), adjacent))
                 
+                # Immer Länge und Dauer sammeln
+                length[adjacent] = length[vertex] + graph.edges[vertex, adjacent, 0]["length"]
+                travel_time[adjacent] = travel_time[vertex] + graph.edges[vertex, adjacent, 0]["travel_time"]
+       
             elif ((new_dist) < dist[adjacent]):
                 parent[adjacent] = vertex
                 dist[adjacent] = new_dist
@@ -76,11 +86,15 @@ def astar(graph, start, target, metric='0', weight='length', **kwargs):
                 #changePriority in Python nicht möglich? Einfach hinzufügen
                 h = heuristik(graph, adjacent, target)
                 openList.put((dist[adjacent] + h, next(counter), adjacent))
-    
+                    
+                # Immer Länge und Dauer sammeln
+                length[adjacent] = length[vertex] + graph.edges[vertex, adjacent, 0]["length"]
+                travel_time[adjacent] = travel_time[vertex] + graph.edges[vertex, adjacent, 0]["travel_time"]
+       
         if len(inner_array)>0:
             matrix.append(inner_array)
         
-    return matrix, make_path(parent, target)
+    return matrix, make_path(parent, target), dist.get(target, 0), length.get(target, 0), travel_time.get(target, 0)
 
 def null(G,v,t):
     return 0
@@ -122,7 +136,10 @@ if __name__ == "__main__":
         #295704008
         #295704255
         print("astar")
-        matrix, path = astar(G,379493008, 295704255, weight='travel_time')
+        matrix, path, cost, length, time = astar(G,379493008, 295704255, weight='travel_time')
         print(matrix)
         print(path)
         print(len(matrix))
+        print(cost)
+        print(length)
+        print(time)

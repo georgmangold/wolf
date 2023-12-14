@@ -405,6 +405,26 @@ class UI(QMainWindow):
         self.image_widget.setPixmap(pixmap)
 
         layout_algo.addWidget(self.image_widget)
+        
+        # Start, Ziel, Gewicht, Länge, Dauer, Routen
+        self.label_start_target = QLabel("Start: None, Ziel: None")
+        self.label_start_target.setMaximumHeight(20)
+        self.label_start_target.setTextFormat(Qt.RichText)
+        self.label_start_target.setOpenExternalLinks(True)
+        self.label_cost_weight = QLabel("Gewicht: x, Länge: x m, Dauer: x s")
+        self.label_cost_weight.setMaximumHeight(20)
+        self.label_routen_punkte = QLabel("Über: []")
+        #self.label_routen_punkte.setMaximumHeight(20)
+        self.label_routen_punkte.setWordWrap(True)
+        self.label_routen = QLabel("Route: []")
+        #self.label_routen.setMaximumHeight(20)
+        self.label_routen.setWordWrap(True)
+        
+        layout_algo.addWidget(self.label_start_target)
+        layout_algo.addWidget(self.label_cost_weight)
+        layout_algo.addWidget(self.label_routen_punkte)
+        layout_algo.addWidget(self.label_routen)
+
         layout_algo.addStretch()
 
 

@@ -12,6 +12,11 @@ def dijkstra(graph, start, target, abort=True, weight='length', **kwargs):
     counter = count() 
     todo.put((0, next(counter),start))
     
+    # Haben schon die Kosten anhand des aktuellen Gewichts,
+    # wollen aber immer die Länge und Dauer:
+    length = {start: 0}
+    travel_time = {start: 0}
+    
     while not todo.empty():
 
         inner_array = []
@@ -36,6 +41,11 @@ def dijkstra(graph, start, target, abort=True, weight='length', **kwargs):
                 todo.put((new_cost, next(counter), adjacent))
                 cost[adjacent] = new_cost
                 parent[adjacent] = vertex
+                
+                # Immer Länge und Dauer sammeln
+                length[adjacent] = length[vertex] + graph.edges[vertex, adjacent, 0]["length"]
+                travel_time[adjacent] = travel_time[vertex] + graph.edges[vertex, adjacent, 0]["travel_time"]
+
             
             # if (vertex, adjacent) not in inner_array:
             inner_array.append([vertex, adjacent])
@@ -48,7 +58,7 @@ def dijkstra(graph, start, target, abort=True, weight='length', **kwargs):
         if(len(inner_array) > 0) and inner_array not in matrix:
             matrix.append(inner_array)
 
-    return matrix, make_path(parent, target)
+    return matrix, make_path(parent, target), cost.get(target, 0), length.get(target, 0), travel_time.get(target, 0)
 
 def make_path(parent, target):
     path = []
@@ -61,3 +71,21 @@ def make_path(parent, target):
         path.append(v)
         v = parent[v]
     return path[::-1]
+
+if __name__ == "__main__":
+        ## Bbox vom Start
+        north, south, east, west = 50.32942276889266, 50.32049083973944, 11.944606304168701, 11.929510831832886
+        
+        ## create network from that bounding box
+        G = ox.graph_from_bbox(north, south, east, west, network_type="drive")
+        G = ox.add_edge_speeds(G)
+        G = ox.add_edge_travel_times(G)
+        #295704008
+        #295704255
+        print("greedy")
+        matrix, path, cost, length, time = dijkstra(G,379493008, 295704255, abort=False, weight='length')
+        print(len(matrix))
+        print(path)
+        print(cost)
+        print(length)
+        print(time)

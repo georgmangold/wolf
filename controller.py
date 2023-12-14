@@ -87,6 +87,10 @@ class Controller:
         self.mutex_slider = QMutex()
         self.thread = QThread()
         self.worker = None
+        
+        self.cost = 0
+        self.length = 0
+        self.travel_time = 0
         #####
         
         # connectSlotsByName functionen zu btns
@@ -224,6 +228,9 @@ class Controller:
         self.end = None
         self.end_point = None
         self.routen_punkte = {}
+        self.cost = 0
+        self.length = 0
+        self.travel_time = 0
         
         self.ui.canvas.axes.cla()
         #self.ui.canvas.axes.figure.clf()
@@ -326,6 +333,10 @@ class Controller:
                     self.routen_punkte[node]['point'] = points[0]
                     self.routen_punkte[node]['annotation'] = annotation
             
+            # Start Ziel Beschriftung
+            self.ui.label_start_target.setText(f"Start: <a style='text-decoration:none'href='https://www.openstreetmap.org/node/{str(self.start)}'>{str(self.start)}</a>, Ziel: <a style='text-decoration:none'href='https://www.openstreetmap.org/node/{str(self.end)}'>{str(self.end)}</a>")
+            self.ui.label_routen_punkte.setText(f"Über: {str(list(self.routen_punkte.keys()))}")
+
             self.fig.canvas.draw()
             self.fig.canvas.flush_events()
             
@@ -932,27 +943,45 @@ class Controller:
         print("Start: ", self.start, " Ziel: ", self.end)
         if len(self.routen_punkte) == 0:
             # Einfache Route
-            self.besuchte_routen, self.found_path = algo(graph=self.graph, start=self.start, target=self.end, metric=self.heuristik, weight=self.weight, abort=self.ui.checkbox_target.isChecked())
+            self.besuchte_routen, self.found_path, self.cost, self.length, self.travel_time  = algo(graph=self.graph, start=self.start, target=self.end, metric=self.heuristik, weight=self.weight, abort=self.ui.checkbox_target.isChecked())
         
         else:
             # Mit mehreren Routenpunkten
             keys = list(self.routen_punkte.keys())
             print("Routen: ",keys)
             next_start = keys[0]
-            self.besuchte_routen, self.found_path = algo(graph=self.graph, start=self.start, target=next_start, metric=self.heuristik, weight=self.weight, abort=self.ui.checkbox_target.isChecked())
+            self.besuchte_routen, self.found_path, self.cost, self.length, self.travel_time = algo(graph=self.graph, start=self.start, target=next_start, metric=self.heuristik, weight=self.weight, abort=self.ui.checkbox_target.isChecked())
             
-            i = 1
-            while i < len(keys):
-                print(next_start)
-                besuchte_routen, found_path = algo(graph=self.graph, start=next_start, target=keys[i], metric=self.heuristik, weight=self.weight, abort=self.ui.checkbox_target.isChecked())
-                self.besuchte_routen += besuchte_routen
-                self.found_path += found_path[1:]
-                next_start = keys[i]
-                i += 1
-            besuchte_routen, found_path = algo(graph=self.graph, start=next_start, target=self.end, metric=self.heuristik, weight=self.weight, abort=self.ui.checkbox_target.isChecked())
-            self.besuchte_routen += besuchte_routen
-            self.found_path += found_path[1:]
-                
+            #Prüfen ob erste Route überhaupt gefunden wurde
+            if len(self.found_path)>0:
+                i = 1
+                while i < len(keys):
+                    print(next_start)
+                    besuchte_routen, found_path, cost, length, travel_time = algo(graph=self.graph, start=next_start, target=keys[i], metric=self.heuristik, weight=self.weight, abort=self.ui.checkbox_target.isChecked())
+                    #Prüfen ob Route überhaupt gefunden wurde
+                    if len(self.found_path)==0:
+                        self.besuchte_routen = []
+                        self.cost = 0
+                        self.length = 0
+                        self.travel_time = 0
+                        break
+                    self.besuchte_routen += besuchte_routen
+                    self.found_path += found_path[1:]
+                    self.cost += cost
+                    self.length += length
+                    self.travel_time += travel_time
+                    next_start = keys[i]
+                    i += 1
+                    
+                #Prüfen ob Routen davor überhaupt gefunden wurden
+                if len(self.found_path)>0:
+                    besuchte_routen, found_path, cost, length, travel_time = algo(graph=self.graph, start=next_start, target=self.end, metric=self.heuristik, weight=self.weight, abort=self.ui.checkbox_target.isChecked())
+                    self.besuchte_routen += besuchte_routen
+                    self.found_path += found_path[1:]
+                    self.cost += cost
+                    self.length += length
+                    self.travel_time += travel_time
+               
         self.ui.slider_Steps.setMaximum(len(self.besuchte_routen)+1)
         self.ui.label_steps.setText(f"Schritte: {0} von {len(self.besuchte_routen)+1}")
         #print(self.besuchte_routen)
@@ -960,8 +989,17 @@ class Controller:
         if len(self.found_path)>0:
             print("Pfade erstellt:")
             print(self.found_path)
+            print(f"Gewicht: {round(self.cost)}, Länge: {round(self.length)}m, Dauer: {round(self.travel_time)}s")
+        
+            self.ui.label_cost_weight.setText(f"Gewicht: {round(self.cost)}, Länge: {round(self.length)}m, Dauer: {round(self.travel_time)}s")
+            self.ui.label_routen.setText(f"Route: {self.found_path}")
+        
         else:
             print("Keine Route gefunden!")
+            
+            self.ui.label_cost_weight.setText("Gewicht: x, Länge: x m, Dauer: x s")
+            self.ui.label_routen.setText(f"Route: []")
+      
         
         if self.ui.checkbox_slider_steps_lock.isChecked():
             self.update_slider_Steps(len(self.besuchte_routen)+1)
