@@ -1,23 +1,69 @@
-from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
-    QMetaObject, QObject, QPoint, QRect,
-    QSize, QTime, QUrl, Qt)
-from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
-    QFont, QFontDatabase, QGradient, QIcon,
-    QImage, QKeySequence, QLinearGradient, QPainter,
-    QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QFrame, QMainWindow, QMenuBar, QHBoxLayout, QGridLayout, QComboBox, QCheckBox, QGroupBox,
-    QPushButton, QSizePolicy, QSlider, QStatusBar, QLabel, QLineEdit, QToolBox, QSplitter, QRadioButton,
-    QTabWidget, QVBoxLayout, QWidget)
-
 import matplotlib
-matplotlib.use("svg") #svg export
-matplotlib.use('QtAgg')
 
-from PySide6 import QtWidgets, QtGui, QtCore
+matplotlib.use("svg")  # svg export
+matplotlib.use("QtAgg")
+from PySide6.QtCore import (
+    QCoreApplication,
+    QDate,
+    QDateTime,
+    QLocale,
+    QMetaObject,
+    QObject,
+    QPoint,
+    QRect,
+    QSize,
+    Qt,
+    QTime,
+    QUrl,
+)
+from PySide6.QtGui import (
+    QBrush,
+    QColor,
+    QConicalGradient,
+    QCursor,
+    QFont,
+    QFontDatabase,
+    QGradient,
+    QIcon,
+    QImage,
+    QKeySequence,
+    QLinearGradient,
+    QPainter,
+    QPalette,
+    QPixmap,
+    QRadialGradient,
+    QTransform,
+)
+from PySide6.QtWidgets import (
+    QApplication,
+    QCheckBox,
+    QComboBox,
+    QFrame,
+    QGridLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QMainWindow,
+    QMenuBar,
+    QPushButton,
+    QRadioButton,
+    QSizePolicy,
+    QSlider,
+    QSplitter,
+    QStatusBar,
+    QTabWidget,
+    QToolBox,
+    QVBoxLayout,
+    QWidget,
+)
 
-from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
+
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
+from PySide6 import QtCore, QtGui, QtWidgets
+
 
 class MplCanvas(FigureCanvas):
     def __init__(self, parent=None, width=5, height=4, dpi=100):
@@ -25,6 +71,7 @@ class MplCanvas(FigureCanvas):
         fig.subplots_adjust(top=1.0, bottom=0.0, left=0.0, right=1.0)
         self.axes = fig.add_subplot(111)
         super(MplCanvas, self).__init__(fig)
+
 
 class ImageWidget(QWidget):
     def __init__(self, image_path):
@@ -45,8 +92,11 @@ class ImageWidget(QWidget):
         self.set_image(pixmap)
 
     def set_image(self, pixmap):
-        scaled_pixmap = pixmap.scaled(300, 300, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        scaled_pixmap = pixmap.scaled(
+            300, 300, Qt.KeepAspectRatio, Qt.SmoothTransformation
+        )
         self.image_label.setPixmap(scaled_pixmap)
+
 
 class UI(QMainWindow):
     def __init__(self):
@@ -62,7 +112,7 @@ class UI(QMainWindow):
 
         # splitter
         splitter = QSplitter()
-        
+
         # linke Spalte
         left_widget = QWidget()
         left_layout = QVBoxLayout()
@@ -76,7 +126,7 @@ class UI(QMainWindow):
 
         left_layout.addWidget(toolbar)
         left_layout.addWidget(self.canvas)
- 
+
         # Hier die ganzen Buttons
         buttons_layout = QHBoxLayout()
         buttons_layout.addStretch()
@@ -142,10 +192,10 @@ class UI(QMainWindow):
         self.btn_end.setObjectName("btn_end")
         self.btn_end.setFixedSize(QSize(50, 50))
         self.btn_end.setToolTip("Zum Ende springen")
-        
+
         buttons_layout.addWidget(self.btn_end)
         buttons_layout.addStretch()
-        
+
         left_layout.addLayout(buttons_layout)
 
         # Labels
@@ -162,8 +212,7 @@ class UI(QMainWindow):
 
         # Sliders
         slider_layout = QHBoxLayout()
-        #slider_layout.addStretch()
-
+        # slider_layout.addStretch()
 
         # Slider für Geschwindigkeit
         self.slider_velocity = QSlider()
@@ -188,13 +237,12 @@ class UI(QMainWindow):
         self.slider_Steps.setTracking(False)
         slider_layout.addWidget(self.slider_Steps)
 
-
         # Checkbox um Slider optional am Ende stehen zu lassen
         self.checkbox_slider_steps_lock = QCheckBox("Ende fixieren")
         self.checkbox_slider_steps_lock.setObjectName("checkbox_slider_steps_lock")
         slider_layout.addWidget(self.checkbox_slider_steps_lock)
 
-        #slider_layout.addStretch()
+        # slider_layout.addStretch()
 
         left_layout.addLayout(slider_layout)
 
@@ -208,9 +256,8 @@ class UI(QMainWindow):
         self.btn_playBwd.raise_()
         self.slider_velocity.raise_()
 
-
         splitter.addWidget(left_widget)
-        
+
         # Right side
         right_frame = QFrame()
         right_layout = QVBoxLayout()
@@ -235,13 +282,13 @@ class UI(QMainWindow):
         # Create a QVBoxLayout to stack the QToolBoxes vertically
         layout_map = QVBoxLayout()
         tab_map.setLayout(layout_map)
-        
+
         ## Karte nach Ort
         label_map_city = QLabel("Suche Stadt/Ort")
         label_map_city.setMaximumHeight(20)
         self.lineedit_place_name = QLineEdit()
         self.btn_get_by_name = QPushButton("Setze Ort")
-        self.btn_get_by_name.setObjectName('btn_get_by_name')
+        self.btn_get_by_name.setObjectName("btn_get_by_name")
 
         layout_map.addWidget(label_map_city)
         layout_map.addWidget(self.lineedit_place_name)
@@ -251,9 +298,9 @@ class UI(QMainWindow):
         line.setFrameShape(QFrame.HLine)
         line.setFrameShadow(QFrame.Sunken)
         layout_map.addWidget(line)
-        
+
         # Karte von Bbox
-        #north, south, east, west = 50.32942276889266, 50.32049083973944, 11.944606304168701, 11.929510831832886        
+        # north, south, east, west = 50.32942276889266, 50.32049083973944, 11.944606304168701, 11.929510831832886
         label_north = QLabel("Nord 50.32942276889266")
         label_north.setMaximumHeight(20)
         self.lineedit_north = QLineEdit()
@@ -266,9 +313,9 @@ class UI(QMainWindow):
         label_west = QLabel("West 11.929510831832886")
         label_west.setMaximumHeight(20)
         self.lineedit_west = QLineEdit()
-        
+
         self.btn_bbox = QPushButton("Setze Bbox")
-        self.btn_bbox.setObjectName('btn_bbox')
+        self.btn_bbox.setObjectName("btn_bbox")
 
         layout_map.addWidget(label_north)
         layout_map.addWidget(self.lineedit_north)
@@ -284,18 +331,20 @@ class UI(QMainWindow):
         line.setFrameShape(QFrame.HLine)
         line.setFrameShadow(QFrame.Sunken)
         layout_map.addWidget(line)
-        
+
         ## Karte nach aktueller Plot Auswahl
-        
-        label_auswahl = QLabel("Benutze die Luppe aus der Toolbar um einen Bereich auszuwählen und zu zoomen. Reset der Zoomstufe mit Home oder Zurück Button")
+
+        label_auswahl = QLabel(
+            "Benutze die Luppe aus der Toolbar um einen Bereich auszuwählen und zu zoomen. Reset der Zoomstufe mit Home oder Zurück Button"
+        )
         label_auswahl.setWordWrap(True)
 
         self.btn_auswahl = QPushButton("Setze aktuelle Auswahl")
-        self.btn_auswahl.setObjectName('btn_auswahl')
+        self.btn_auswahl.setObjectName("btn_auswahl")
 
         layout_map.addWidget(label_auswahl)
-        layout_map.addWidget(self.btn_auswahl)    
-                
+        layout_map.addWidget(self.btn_auswahl)
+
         line = QFrame()
         line.setFrameShape(QFrame.HLine)
         line.setFrameShadow(QFrame.Sunken)
@@ -311,11 +360,11 @@ class UI(QMainWindow):
         self.checkbox_gephi.setObjectName("checkbox_gephi")
 
         self.btn_save_graphml = QPushButton("Speichere GraphML")
-        self.btn_save_graphml.setObjectName('btn_save_graphml')
+        self.btn_save_graphml.setObjectName("btn_save_graphml")
 
         self.btn_load_graphml = QPushButton("Lade GraphML")
-        self.btn_load_graphml.setObjectName('btn_load_graphml')
-        
+        self.btn_load_graphml.setObjectName("btn_load_graphml")
+
         layout_map.addWidget(label_map_graphml)
         layout_map.addWidget(self.lineedit_graphml_path)
         layout_map.addWidget(self.checkbox_gephi)
@@ -323,7 +372,6 @@ class UI(QMainWindow):
         layout_map.addWidget(self.btn_load_graphml)
 
         layout_map.addStretch()
-
 
         # Algo-Tab
 
@@ -335,11 +383,11 @@ class UI(QMainWindow):
         radio_layout = QHBoxLayout()
         self.groupbox_algo.setLayout(radio_layout)
         self.radio_dijkstra = QRadioButton("Dijkstra")
-        self.radio_dijkstra.setObjectName('radio_dijkstra')
+        self.radio_dijkstra.setObjectName("radio_dijkstra")
         self.radio_greedy = QRadioButton("Greedy")
-        self.radio_greedy.setObjectName('radio_greedy')
+        self.radio_greedy.setObjectName("radio_greedy")
         self.radio_astar = QRadioButton("A*")
-        self.radio_astar.setObjectName('radio_astar')
+        self.radio_astar.setObjectName("radio_astar")
         self.radio_dijkstra.setChecked(True)
         radio_layout.addWidget(self.radio_dijkstra)
         radio_layout.addWidget(self.radio_greedy)
@@ -354,9 +402,9 @@ class UI(QMainWindow):
         self.groupbox_weight.setLayout(radio_layout_weight)
 
         self.radio_weight_length = QRadioButton("Länge")
-        self.radio_weight_length.setObjectName('radio_weight_length')
+        self.radio_weight_length.setObjectName("radio_weight_length")
         self.radio_weight_duration = QRadioButton("Dauer")
-        self.radio_weight_duration.setObjectName('radio_weight_duration')
+        self.radio_weight_duration.setObjectName("radio_weight_duration")
         self.radio_weight_length.setChecked(True)
         radio_layout_weight.addWidget(self.radio_weight_length)
         radio_layout_weight.addWidget(self.radio_weight_duration)
@@ -374,7 +422,7 @@ class UI(QMainWindow):
         self.checkbox_target.setChecked(True)
         self.layout_add_1.addWidget(self.checkbox_target)
 
-        self.groupbox_add.setLayout(self.layout_add_1)    
+        self.groupbox_add.setLayout(self.layout_add_1)
 
         self.groupbox_heuristic = QGroupBox("Heuristik:")
         layout_add_boxes = QHBoxLayout()
@@ -405,7 +453,7 @@ class UI(QMainWindow):
         self.image_widget.setPixmap(pixmap)
 
         layout_algo.addWidget(self.image_widget)
-        
+
         # Start, Ziel, Gewicht, Länge, Dauer, Routen
         self.label_start_target = QLabel("Start: None, Ziel: None")
         self.label_start_target.setMaximumHeight(20)
@@ -414,19 +462,18 @@ class UI(QMainWindow):
         self.label_cost_weight = QLabel("Gewicht: x, Länge: x m, Dauer: x s")
         self.label_cost_weight.setMaximumHeight(20)
         self.label_routen_punkte = QLabel("Über: []")
-        #self.label_routen_punkte.setMaximumHeight(20)
+        # self.label_routen_punkte.setMaximumHeight(20)
         self.label_routen_punkte.setWordWrap(True)
         self.label_routen = QLabel("Route: []")
-        #self.label_routen.setMaximumHeight(20)
+        # self.label_routen.setMaximumHeight(20)
         self.label_routen.setWordWrap(True)
-        
+
         layout_algo.addWidget(self.label_start_target)
         layout_algo.addWidget(self.label_cost_weight)
         layout_algo.addWidget(self.label_routen_punkte)
         layout_algo.addWidget(self.label_routen)
 
         layout_algo.addStretch()
-
 
         # Settings Tab
 
@@ -438,13 +485,13 @@ class UI(QMainWindow):
         radio_layout_edges = QVBoxLayout()
         self.groupbox_settings_edges.setLayout(radio_layout_edges)
         self.radio_settings_name = QRadioButton("Straßenname")
-        self.radio_settings_name.setObjectName('radio_settings_name')
+        self.radio_settings_name.setObjectName("radio_settings_name")
         self.radio_settings_length = QRadioButton("Länge")
-        self.radio_settings_length.setObjectName('radio_settings_length')
+        self.radio_settings_length.setObjectName("radio_settings_length")
         self.radio_settings_duration = QRadioButton("Dauer")
-        self.radio_settings_duration.setObjectName('radio_settings_duration')
+        self.radio_settings_duration.setObjectName("radio_settings_duration")
         self.radio_settings_none_edges = QRadioButton("Keine Kantenbeschriftung")
-        self.radio_settings_none_edges.setObjectName('radio_settings_none')
+        self.radio_settings_none_edges.setObjectName("radio_settings_none")
         self.radio_settings_none_edges.setChecked(True)
         radio_layout_edges.addWidget(self.radio_settings_name)
         radio_layout_edges.addWidget(self.radio_settings_length)
@@ -452,21 +499,20 @@ class UI(QMainWindow):
         radio_layout_edges.addWidget(self.radio_settings_none_edges)
 
         layout_settings.addWidget(self.groupbox_settings_edges)
-        
+
         # Einstellung für Nodes
         self.groupbox_settings_nodes = QGroupBox("Knotenbeschriftung:")
         radio_layout_nodes = QVBoxLayout()
         self.groupbox_settings_nodes.setLayout(radio_layout_nodes)
         self.radio_settings_id = QRadioButton("ID")
-        self.radio_settings_id.setObjectName('radio_settings_id')
+        self.radio_settings_id.setObjectName("radio_settings_id")
         self.radio_settings_none_nodes = QRadioButton("Keine Knotenbeschriftung")
-        self.radio_settings_none_nodes.setObjectName('radio_settings_none')
+        self.radio_settings_none_nodes.setObjectName("radio_settings_none")
         self.radio_settings_none_nodes.setChecked(True)
         radio_layout_nodes.addWidget(self.radio_settings_id)
         radio_layout_nodes.addWidget(self.radio_settings_none_nodes)
 
         layout_settings.addWidget(self.groupbox_settings_nodes)
-
 
         # Hintergrundtyp
 
@@ -483,36 +529,37 @@ class UI(QMainWindow):
         self.combo_background.addItem("CartoDB.DarkMatter")
         self.combo_background.addItem("OpenTopoMap")
         layout_settings.addWidget(self.combo_background)
-        
+
         line = QFrame()
         line.setFrameShape(QFrame.HLine)
         line.setFrameShadow(QFrame.Sunken)
         layout_settings.addWidget(line)
 
-
         # Save Settings
         self.btn_save_settings = QPushButton("Speichern und Anwenden")
-        self.btn_auswahl.setObjectName('btn_save_settings')
+        self.btn_auswahl.setObjectName("btn_save_settings")
 
         layout_settings.addWidget(self.btn_save_settings)
 
-
         layout_settings.addStretch()
-
 
         # About
         layout_about = QVBoxLayout()
         tab_about.setLayout(layout_about)
 
-        label_about = QLabel("About:\n Created by Georg Mangold, Christoph Schmidhuber, Marco Rinn")
+        label_about = QLabel(
+            "About:\n Created by Georg Mangold, Christoph Schmidhuber, Marco Rinn"
+        )
         label_about.setWordWrap(True)
-        
+
         layout_about.addWidget(label_about)
 
         label_logo = QLabel()
         label_logo.setAlignment(Qt.AlignCenter)
         pixmap = QPixmap("gfx/wolf_logo.png")
-        scaled_pixmap = pixmap.scaled(300, 300, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        scaled_pixmap = pixmap.scaled(
+            300, 300, Qt.KeepAspectRatio, Qt.SmoothTransformation
+        )
         label_logo.setPixmap(scaled_pixmap)
 
         layout_about.addWidget(label_logo)
