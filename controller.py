@@ -580,7 +580,10 @@ class Controller:
                     self.progress.emit(self.start)
                     sleeptime = 1 / self.velocity
                     sleep(sleeptime)
-                      
+            
+            #Letzes Warten vor Ende
+            sleep(1)
+            self.progress.emit(self.start)
             self.finished.emit()
         
         def setSpeed(self, velocity):
