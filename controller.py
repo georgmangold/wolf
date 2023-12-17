@@ -359,10 +359,10 @@ class Controller:
         north, south, east, west = 50.32942276889266, 50.32049083973944, 11.944606304168701, 11.929510831832886
 
         if(self.ui.lineedit_north.text() != "" and self.ui.lineedit_south.text() != "" and self.ui.lineedit_east.text() != "" and self.ui.lineedit_west.text() != ""):
-            north = self.ui.lineedit_north.text()
-            south = self.ui.lineedit_south.text()
-            east = self.ui.lineedit_east.text()
-            west = self.ui.lineedit_west.text()
+            north = self.ui.lineedit_north.text().replace(",", ".")
+            south = self.ui.lineedit_south.text().replace(",", ".")
+            east = self.ui.lineedit_east.text().replace(",", ".")
+            west = self.ui.lineedit_west.text().replace(",", ".")
         
         #self.graph = ox.graph_from_bbox(north, south, east, west, network_type=self.network_type)
 
