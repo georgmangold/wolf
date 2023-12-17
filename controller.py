@@ -69,7 +69,6 @@ class Controller:
         self.plot_steps = {}
                 
         self.graph = None
-        #self.besuchte_routen = []
         self.besuchte_routen = []
         self.found_path = []
 
@@ -117,7 +116,8 @@ class Controller:
         self.ui.radio_manhattan.clicked.connect(self.check_generate_routes)
         
         self.ui.slider_velocity.valueChanged.connect(self.slider_velocity_value_changed)
-        
+        self.ui.slider_velocity.sliderMoved.connect(self.slider_velocity_moved)
+
         self.ui.slider_Steps.valueChanged.connect(self.slider_Steps_value_changed)
         # Slider Tracking is disabled so value_changed triggers on release but gives value
         #self.ui.slider_Steps.sliderReleased.connect(self.slider_Steps_sliderReleased)
@@ -160,6 +160,9 @@ class Controller:
         
         self.check_generate_routes()
 
+    def slider_velocity_moved(self, value):
+        value /= 100
+        self.ui.label_velocity.setText(f"Aktuelle Geschwindigkeit: {value: .2f}x")
 
     def slider_velocity_value_changed(self, value):
         value /= 100
