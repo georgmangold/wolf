@@ -32,6 +32,11 @@ def greedy(graph, start, target, metric='0', weight='length', **kwargs):
     matrix = []
     parent = {start: None}
     visited = set()
+    
+    # Haben schon die Kosten anhand des aktuellen Gewichts,
+    # wollen aber immer die Länge und Dauer:
+    length = {start: 0}
+    travel_time = {start: 0}
 
     while not todo.empty():
         
@@ -42,7 +47,7 @@ def greedy(graph, start, target, metric='0', weight='length', **kwargs):
         visited.add(vertex)
 
         if vertex == target:
-            return matrix, make_path(parent, target)
+            return matrix, make_path(parent, target), cost.get(target, 0), length.get(target, 0), travel_time.get(target, 0)
         
         for adjacent,_ in graph._adj[vertex].items():
 
@@ -57,10 +62,15 @@ def greedy(graph, start, target, metric='0', weight='length', **kwargs):
                 parent[adjacent] = vertex
                 
                 cost[adjacent] = new_cost
+                
+                # Immer Länge und Dauer sammeln
+                length[adjacent] = length[vertex] + graph.edges[vertex, adjacent, 0]["length"]
+                travel_time[adjacent] = travel_time[vertex] + graph.edges[vertex, adjacent, 0]["travel_time"]
+
 
                 if adjacent == target:
                     matrix.append(inner_array)
-                    return matrix, make_path(parent, target)
+                    return matrix, make_path(parent, target), cost.get(target, 0), length.get(target, 0), travel_time.get(target, 0)
                 
                 h = heuristik(graph,adjacent,target)
                 todo.put((h, next(counter), adjacent))
@@ -68,7 +78,7 @@ def greedy(graph, start, target, metric='0', weight='length', **kwargs):
         if len(inner_array)>0:
             matrix.append(inner_array)
 
-    return matrix, make_path(parent, target)
+    return matrix, make_path(parent, target), cost.get(target, 0), length.get(target, 0), travel_time.get(target, 0)
 
 def null(G,v,t):
     return 0
@@ -109,6 +119,9 @@ if __name__ == "__main__":
         #295704008
         #295704255
         print("greedy")
-        matrix, path = greedy(G,379493008, 295704255, weight='travel_time')
+        matrix, path, cost, length, time = greedy(G,379493008, 295704255, weight='travel_time')
         print(matrix)
         print(path)
+        print(cost)
+        print(length)
+        print(time)
