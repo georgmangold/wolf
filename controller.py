@@ -36,7 +36,8 @@ class Controller:
         ox.settings.default_crs='epsg:4326' #default ist epsg:4326, leider nicht epsg:3857...
         self.network_type='drive'
         #self.network_type='walk'
-        self.marker = self.getCustomMarker()
+        self.custom_marker_path = "icons/wolf3.svg"
+        self.marker = self.getCustomMarker(self.custom_marker_path)
         self.node_id = False
         self.edge_id = False
         self.route_color="orange"
@@ -68,19 +69,8 @@ class Controller:
         self.plot_steps = {}
                 
         self.graph = None
-        #self.besuchte_routen = []
-        self.besuchte_routen = [
-            [[295704006, 295704008],[295704006, 379493008],[295704006, 341097090]],
-            [[295704008, 295704040],[295704008, 295704010],[379493008, 295704010],[341097090, 379493100],[341097090, 341097088]],
-            [[295704040, 295704024],[295704040, 379493005],[295704040, 379493119],[295704010, 379493005],[379493100, 379493227],[379493100, 379493102],[341097088, 324775669]],
-            [[295704024, 298157835],[295704024, 299395054],[379493119, 299395098],[379493119, 379493227],[379493227, 299395098],[324775669, 324775529],[324775669, 343477485]],
-            [[298157835, 298196377],[299395054, 298196528],[299395054, 295704034],[299395054, 299395098],[299395098, 324775529],[324775529, 295704036],[343477485, 341442403],[343477485, 324772600]],
-            [[298196377, 298196528],[298196528, 298196326],[298196528, 299395054],[295704034, 298196326],[295704036, 295704034],[295704036, 295704075],[341442403, 324776715],[341442403, 324775672],[324772600, 324775672]],
-            [[298196326, 295704075],[295704075, 343479324],[295704075, 9182217733],[324776715, 324776188],[324776715, 295704255],[324775672, 492150429]],
-            [[9182217733, 343477595],[9182217733, 379570454]],
-            [[379570454, 343477573]],
-        ]
-        self.found_path = [295704006, 341097090, 379493100, 379493227, 299395098, 324775529, 295704036, 295704075, 9182217733, 379570454, 343477573]
+        self.besuchte_routen = []
+        self.found_path = []
 
         self.current_step = 0
         self.mutex_button_press = QMutex()
@@ -126,7 +116,8 @@ class Controller:
         self.ui.radio_manhattan.clicked.connect(self.check_generate_routes)
         
         self.ui.slider_velocity.valueChanged.connect(self.slider_velocity_value_changed)
-        
+        self.ui.slider_velocity.sliderMoved.connect(self.slider_velocity_moved)
+
         self.ui.slider_Steps.valueChanged.connect(self.slider_Steps_value_changed)
         # Slider Tracking is disabled so value_changed triggers on release but gives value
         #self.ui.slider_Steps.sliderReleased.connect(self.slider_Steps_sliderReleased)
@@ -169,6 +160,9 @@ class Controller:
         
         self.check_generate_routes()
 
+    def slider_velocity_moved(self, value):
+        value /= 100
+        self.ui.label_velocity.setText(f"Aktuelle Geschwindigkeit: {value: .2f}x")
 
     def slider_velocity_value_changed(self, value):
         value /= 100
@@ -198,10 +192,14 @@ class Controller:
             self.current_step = value
             self.mutex_slider.unlock()
         
-    def getCustomMarker(self):
+    def getCustomMarker(self, path="icons/wolf3.svg"):
+        
+        if not isfile(path):
+            path = 'icons/wolf3.svg'
+        
         # Eigener Mappin Marker von SVG
         #_, attributes = svg2paths('icons/map-pin.svg')
-        _, attributes = svg2paths('icons/wolf3.svg')
+        _, attributes = svg2paths(path)
         mappin_marker = parse_path(attributes[0]['d'])
         
         # Center Position
@@ -216,6 +214,9 @@ class Controller:
         mappin_marker = mappin_marker.transformed(matplotlib.transforms.Affine2D().rotate_deg(180))
         mappin_marker = mappin_marker.transformed(matplotlib.transforms.Affine2D().scale(-1,1))
         
+        # Eigene Klasse mit __str__ überschrieben, fix Anzeige Bug in Matplotlib Figure Options
+        mappin_marker = CustomMarkerPath(string=path, vertices=mappin_marker.vertices)
+        
         return mappin_marker
     
     def plotStreetGraph(self):
@@ -223,14 +224,7 @@ class Controller:
         Funktion zum Zeichnen des aktuellen Graphen
         '''
         
-        self.start = None
-        self.start_point = None
-        self.end = None
-        self.end_point = None
-        self.routen_punkte = {}
-        self.cost = 0
-        self.length = 0
-        self.travel_time = 0
+        self.reset()
         
         self.ui.canvas.axes.cla()
         #self.ui.canvas.axes.figure.clf()
@@ -270,7 +264,6 @@ class Controller:
         if self.background != "Kein Hintergrund":
             print("Hintergrund hinzufügen..")
             cx.add_basemap(self.ax, crs='epsg:3857', source=eval(f'cx.providers.{self.background}'))
-            #cx.add_basemap(self.ax, crs='epsg:3857', source=globals()[f'cx.providers.{self.background}'])
             print("... done.")
             
         self.fig.canvas.draw()
@@ -350,23 +343,17 @@ class Controller:
         place = 'Hof, Bayern, DE'
         if (self.ui.lineedit_place_name.text() != ""):
             place = self.ui.lineedit_place_name.text()
-        #self.graph = ox.graph_from_place(place, network_type=self.network_type)
 
-        #self.plotStreetGraph()
         self.graph_thread_place(place, self.network_type)
     
     def btn_bbox_clicked(self):
         north, south, east, west = 50.32942276889266, 50.32049083973944, 11.944606304168701, 11.929510831832886
 
         if(self.ui.lineedit_north.text() != "" and self.ui.lineedit_south.text() != "" and self.ui.lineedit_east.text() != "" and self.ui.lineedit_west.text() != ""):
-            north = self.ui.lineedit_north.text()
-            south = self.ui.lineedit_south.text()
-            east = self.ui.lineedit_east.text()
-            west = self.ui.lineedit_west.text()
-        
-        #self.graph = ox.graph_from_bbox(north, south, east, west, network_type=self.network_type)
-
-        #self.plotStreetGraph()
+            north = self.ui.lineedit_north.text().replace(",", ".")
+            south = self.ui.lineedit_south.text().replace(",", ".")
+            east = self.ui.lineedit_east.text().replace(",", ".")
+            west = self.ui.lineedit_west.text().replace(",", ".")
         
         self.graph_thread_bbbox(north, south, east, west, self.network_type)
 
@@ -377,14 +364,11 @@ class Controller:
         west, east = self.ui.canvas.axes.get_xlim()
         south, north = self.ui.canvas.axes.get_ylim()
         
-        #self.graph = ox.graph_from_bbox(north, south, east, west, network_type='drive')
         # Muss wegen Projizierung auf epsg:3857 wieder in epsg:4326 umgewandelt werden
         polygon = ox.utils_geo.bbox_to_poly(north, south, east, west)
         if(self.graph.graph['crs'] == "epsg:3857"):
             polygon, _ = ox.projection.project_geometry(polygon, crs='epsg:3857', to_crs='epsg:4326')
-        #self.graph = ox.graph_from_polygon(polygon, self.network_type)
-        
-        #self.plotStreetGraph()
+
         self.graph_thread_polygon(polygon, self.network_type)
 
     #### Control Buttons:
@@ -392,14 +376,12 @@ class Controller:
     def btn_pause_clicked(self):
         print("Pause-Button pressed.")
         self.stop_thread()
-        self.ui.slider_Steps.setMaximum(len(self.besuchte_routen)+1)
         self.update_slider_Steps(self.current_step)
 
     def btn_begin_clicked(self):
         print("Begin Button pressed.")
 
         self.stop_thread()
-        self.ui.slider_Steps.setMaximum(len(self.besuchte_routen)+1)
 
         self.update_slider_Steps(0)
 
@@ -408,20 +390,17 @@ class Controller:
         print("Step backwards!")
 
         self.stop_thread()
-            
-        self.ui.slider_Steps.setMaximum(len(self.besuchte_routen)+1)
-
+        
         if self.current_step > 0:
             self.update_slider_Steps(self.current_step-1)
 
-    
+
 
     def btn_playBwd_clicked(self):
         print("Play backwards!")
         if self.thread.isRunning():
             return
 
-        self.ui.slider_Steps.setMaximum(len(self.besuchte_routen)+1)
         # Step 1: Create a worker class
         # StepsWorker
         # Step 2: Create a QThread object
@@ -445,7 +424,6 @@ class Controller:
         if self.thread.isRunning():
             return
 
-        self.ui.slider_Steps.setMaximum(len(self.besuchte_routen)+1)
         # Step 1: Create a worker class
         # StepsWorker
         # Step 2: Create a QThread object
@@ -470,8 +448,6 @@ class Controller:
 
         self.stop_thread()
 
-        self.ui.slider_Steps.setMaximum(len(self.besuchte_routen)+1)
-
         if(self.current_step < len(self.besuchte_routen)+1):
             self.update_slider_Steps(self.current_step+1)
         else:
@@ -483,8 +459,6 @@ class Controller:
 
         self.stop_thread()
         
-        self.ui.slider_Steps.setMaximum(len(self.besuchte_routen)+1)
-
         if(self.current_step < len(self.besuchte_routen)+1):
             self.update_slider_Steps(len(self.besuchte_routen)+1)
         else:
@@ -546,25 +520,7 @@ class Controller:
             if self.found_path is not None and len(self.found_path)>0:
                 self.fig, self.ax, plot = self.plot_graph_route(self.graph, self.found_path, ax=self.ui.canvas.axes, route_color=self.route_color, route_linewidth=self.route_linewidth, orig_dest_size=0,route_label='route', route_alpha=self.route_alpha)    
                 self.plot_steps[von+1] = plot
-
-    def plotRouteDemo(self):
-        if self.ui.radio_weight_length.isChecked():
-           self.weight = "length"  
-        elif self.ui.radio_weight_duration.isChecked():
-            self.weight = "travel_time"  
-        else:
-            self.weight = "length"
-          
-        # Demo Routenplannung wenn Start und Ziel gesetzt wurden
-        if self.start is not None and self.end is not None:
-            lines = reversed(self.ax.get_lines())
-            for line in lines:
-                label = line.get_label()
-                if  label != "ende" and label != "start" and label != "route_punkte":
-                    line.remove()
-            route = ox.shortest_path(self.graph, self.start, self.end, weight=self.weight)
-            self.fig, self.ax = ox.plot_graph_route(self.graph, route, ax=self.ui.canvas.axes, route_color=self.route_color, route_linewidth=self.route_linewidth, orig_dest_size=self.orig_dest_size,show=False,route_alpha=1)
-        
+    
     def delete_last_lines(self,step):
         '''
         Löschen direkt aus den gespeicherten Lines
@@ -628,7 +584,10 @@ class Controller:
                     self.progress.emit(self.start)
                     sleeptime = 1 / self.velocity
                     sleep(sleeptime)
-                      
+            
+            #Letzes Warten vor Ende
+            sleep(1)
+            self.progress.emit(self.start)
             self.finished.emit()
         
         def setSpeed(self, velocity):
@@ -1116,3 +1075,27 @@ class Controller:
         
         def setSpeed(self, velocity):
             pass
+    
+    def reset(self):
+        self.start = None
+        self.start_point = None
+        self.end = None
+        self.end_point = None
+        self.routen_punkte = {}
+        self.cost = 0
+        self.length = 0
+        self.travel_time = 0
+        self.found_path = []
+        self.besuchte_routen = []
+        self.current_step = 0
+        self.ui.slider_Steps.setValue(0)
+        self.ui.label_steps.setText(f"Schritte: 0 von 0")
+        self.ui.slider_Steps.setMaximum(0)
+
+class CustomMarkerPath(matplotlib.path.Path):
+   def __init__(self, string="CustomMarker", *args, **kwargs):
+       self.string = string
+       super().__init__(*args, **kwargs)
+
+   def __str__(self):
+       return self.string  
