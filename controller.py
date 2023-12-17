@@ -34,6 +34,8 @@ class Controller:
         ox.settings.default_crs = (
             "epsg:4326"  # default ist epsg:4326, leider nicht epsg:3857...
         )
+        ox.settings.cache_folder = "./cache/osmnx"
+        cx.set_cache_dir("./cache/")
         self.network_type = "drive"
         # self.network_type='walk'
         self.custom_marker_path = "icons/wolf3.svg"
