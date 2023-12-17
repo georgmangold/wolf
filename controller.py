@@ -213,14 +213,7 @@ class Controller:
         Funktion zum Zeichnen des aktuellen Graphen
         '''
         
-        self.start = None
-        self.start_point = None
-        self.end = None
-        self.end_point = None
-        self.routen_punkte = {}
-        self.cost = 0
-        self.length = 0
-        self.travel_time = 0
+        self.reset()
         
         self.ui.canvas.axes.cla()
         #self.ui.canvas.axes.figure.clf()
@@ -1071,3 +1064,19 @@ class Controller:
         
         def setSpeed(self, velocity):
             pass
+    
+    def reset(self):
+        self.start = None
+        self.start_point = None
+        self.end = None
+        self.end_point = None
+        self.routen_punkte = {}
+        self.cost = 0
+        self.length = 0
+        self.travel_time = 0
+        self.found_path = []
+        self.besuchte_routen = []
+        self.current_step = 0
+        self.ui.slider_Steps.setValue(0)
+        self.ui.label_steps.setText(f"Schritte: 0 von 0")
+        self.ui.slider_Steps.setMaximum(0)
