@@ -36,7 +36,8 @@ class Controller:
         ox.settings.default_crs='epsg:4326' #default ist epsg:4326, leider nicht epsg:3857...
         self.network_type='drive'
         #self.network_type='walk'
-        self.marker = self.getCustomMarker()
+        self.custom_marker_path = "icons/wolf3.svg"
+        self.marker = self.getCustomMarker(self.custom_marker_path)
         self.node_id = False
         self.edge_id = False
         self.route_color="orange"
@@ -188,10 +189,14 @@ class Controller:
             self.current_step = value
             self.mutex_slider.unlock()
         
-    def getCustomMarker(self):
+    def getCustomMarker(self, path="icons/wolf3.svg"):
+        
+        if not isfile(path):
+            path = 'icons/wolf3.svg'
+        
         # Eigener Mappin Marker von SVG
         #_, attributes = svg2paths('icons/map-pin.svg')
-        _, attributes = svg2paths('icons/wolf3.svg')
+        _, attributes = svg2paths(path)
         mappin_marker = parse_path(attributes[0]['d'])
         
         # Center Position
@@ -205,6 +210,9 @@ class Controller:
         # Image is upside down and flipped
         mappin_marker = mappin_marker.transformed(matplotlib.transforms.Affine2D().rotate_deg(180))
         mappin_marker = mappin_marker.transformed(matplotlib.transforms.Affine2D().scale(-1,1))
+        
+        # Eigene Klasse mit __str__ überschrieben, fix Anzeige Bug in Matplotlib Figure Options
+        mappin_marker = CustomMarkerPath(string=path, vertices=mappin_marker.vertices)
         
         return mappin_marker
     
@@ -1080,3 +1088,11 @@ class Controller:
         self.ui.slider_Steps.setValue(0)
         self.ui.label_steps.setText(f"Schritte: 0 von 0")
         self.ui.slider_Steps.setMaximum(0)
+
+class CustomMarkerPath(matplotlib.path.Path):
+   def __init__(self, string="CustomMarker", *args, **kwargs):
+       self.string = string
+       super().__init__(*args, **kwargs)
+
+   def __str__(self):
+       return self.string  
