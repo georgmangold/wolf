@@ -9,7 +9,7 @@ from controller import Controller
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    apply_stylesheet(app, theme='light_teal.xml')
+    apply_stylesheet(app, theme='light_teal.xml', invert_secondary=True)
     pixmap = QtGui.QPixmap("gfx/wolf_splashscreen.png")
     pixmap = pixmap.scaled(640, 480)
     splash = QtWidgets.QSplashScreen(pixmap)
