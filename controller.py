@@ -654,7 +654,7 @@ class Controller:
             self.start = start
             self.ende = ende
             self.velocity = velocity
-            
+
             self.running = True
 
         finished = Signal()

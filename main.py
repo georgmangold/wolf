@@ -1,8 +1,8 @@
 import sys
+from time import sleep
 
 from PySide6 import QtGui, QtWidgets
 from PySide6.QtCore import Qt
-from time import sleep
 from qt_material import apply_stylesheet
 
 from controller import Controller

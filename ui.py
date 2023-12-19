@@ -2,6 +2,10 @@ import matplotlib
 
 matplotlib.use("svg")  # svg export
 matplotlib.use("QtAgg")
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
+from matplotlib.figure import Figure
+from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import (
     QCoreApplication,
     QDate,
@@ -21,6 +25,7 @@ from PySide6.QtGui import (
     QColor,
     QConicalGradient,
     QCursor,
+    QDesktopServices,
     QFont,
     QFontDatabase,
     QGradient,
@@ -33,7 +38,6 @@ from PySide6.QtGui import (
     QPixmap,
     QRadialGradient,
     QTransform,
-    QDesktopServices
 )
 from PySide6.QtWidgets import (
     QApplication,
@@ -60,18 +64,13 @@ from PySide6.QtWidgets import (
 )
 
 
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
-from matplotlib.figure import Figure
-from PySide6 import QtCore, QtGui, QtWidgets
-
-
 class MplCanvas(FigureCanvas):
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         fig = Figure(figsize=(width, height), dpi=dpi)
         fig.subplots_adjust(top=1.0, bottom=0.0, left=0.0, right=1.0)
         self.axes = fig.add_subplot(111)
         super(MplCanvas, self).__init__(fig)
+
 
 class UI(QMainWindow):
     def __init__(self):
@@ -560,12 +559,12 @@ class UI(QMainWindow):
         layout_about.addLayout(layout_logos)
 
         label_license = QLabel()
-        html_text = "Lizenzen:<br>\
-                    <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap®</a> sind offene Daten (open data), lizenziert unter der \
-                        <a href=\"https://opendatacommons.org/licenses/odbl/1\">Open Data Commons Open Database-Lizenz </a>(ODbL) \
-                        von der <a href=\"https://osmfoundation.org/\">OpenStreetMap Stiftung</a> (OSMF).<br><br>\
-                    <a href=\"https://osmnx.readthedocs.io/en/stable/\">OSMnx</a> ist Open Source und lizenziert unter der MIT Lizenz.<br><br>\
-                    <a href=\"https://github.com/georgmangold/wolf\">W.O.L.F.</a> wird lizenziert unter der <a href=\"https://choosealicense.com/licenses/mit/\">MIT Lizenz</a>."
+        html_text = 'Lizenzen:<br>\
+                    <a href="https://www.openstreetmap.org/copyright">OpenStreetMap®</a> sind offene Daten (open data), lizenziert unter der \
+                        <a href="https://opendatacommons.org/licenses/odbl/1">Open Data Commons Open Database-Lizenz </a>(ODbL) \
+                        von der <a href="https://osmfoundation.org/">OpenStreetMap Stiftung</a> (OSMF).<br><br>\
+                    <a href="https://osmnx.readthedocs.io/en/stable/">OSMnx</a> ist Open Source und lizenziert unter der MIT Lizenz.<br><br>\
+                    <a href="https://github.com/georgmangold/wolf">W.O.L.F.</a> wird lizenziert unter der <a href="https://choosealicense.com/licenses/mit/">MIT Lizenz</a>.'
         label_license.setTextFormat(Qt.RichText)
         label_license.setTextInteractionFlags(Qt.TextBrowserInteraction)
         label_license.setOpenExternalLinks(True)
