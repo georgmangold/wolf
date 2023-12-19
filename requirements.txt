@@ -6,3 +6,4 @@ scikit-learn
 contextily
 svgpath2mpl
 svgpathtools
+qt-material

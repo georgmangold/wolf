@@ -33,6 +33,7 @@ from PySide6.QtGui import (
     QPixmap,
     QRadialGradient,
     QTransform,
+    QDesktopServices
 )
 from PySide6.QtWidgets import (
     QApplication,
@@ -75,6 +76,7 @@ class MplCanvas(FigureCanvas):
 
 class ImageWidget(QWidget):
     def __init__(self, image_path):
+
         super().__init__()
 
         layout = QVBoxLayout()
@@ -102,7 +104,9 @@ class UI(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("W.O.L.F. - Ways with OpenStreetMap Location Finder")
-        self.setWindowIcon(QIcon("gfx/wolf_logo.png"))
+        self.setWindowIcon(QIcon("gfx/wolf_logo_old.png"))
+
+        version = "1.00 vom 19.12.2023"
 
         main_widget = QWidget()
         self.setCentralWidget(main_widget)
@@ -151,7 +155,7 @@ class UI(QMainWindow):
 
         # Button Play Backwards
         self.btn_playBwd = QPushButton()
-        self.btn_playBwd.setIcon(QIcon("icons/backward.svg"))
+        self.btn_playBwd.setIcon(QIcon("icons/back_play.svg"))
         self.btn_playBwd.setIconSize(QSize(35, 35))
         self.btn_playBwd.setObjectName("btn_playBwd")
         self.btn_playBwd.setFixedSize(QSize(50, 50))
@@ -218,8 +222,8 @@ class UI(QMainWindow):
         self.slider_velocity = QSlider()
         self.slider_velocity.setObjectName("slider_velocity")
         self.slider_velocity.setOrientation(Qt.Horizontal)
-        self.slider_velocity.setMinimum(50)
-        self.slider_velocity.setMaximum(10000)
+        self.slider_velocity.setMinimum(25)
+        self.slider_velocity.setMaximum(500)
         self.slider_velocity.setMaximumWidth(150)
         self.slider_velocity.setMinimumWidth(50)
         self.slider_velocity.setValue(100)
@@ -548,21 +552,55 @@ class UI(QMainWindow):
         tab_about.setLayout(layout_about)
 
         label_about = QLabel(
-            "About:\n Created by Georg Mangold, Christoph Schmidhuber, Marco Rinn"
+            "Erstellt von:\nGeorg Mangold, Christoph Schmidhuber, Marco Rinn\n\nAuftraggeber:\nProf. Dr. Johannes Michael\nFakultät Informatik\nHochschule für angewandte Wissenschaften Hof\nAlfons-Goppel-Platz 1\n95028 Hof"
         )
         label_about.setWordWrap(True)
 
         layout_about.addWidget(label_about)
 
+        version_text = f"Version:\n{version}"
+        label_version = QLabel(version_text, self)
+        layout_about.addWidget(label_version)
+
+        layout_logos = QHBoxLayout()
+
         label_logo = QLabel()
         label_logo.setAlignment(Qt.AlignCenter)
         pixmap = QPixmap("gfx/wolf_logo.png")
         scaled_pixmap = pixmap.scaled(
-            300, 300, Qt.KeepAspectRatio, Qt.SmoothTransformation
+            150, 150, Qt.KeepAspectRatio, Qt.SmoothTransformation
         )
         label_logo.setPixmap(scaled_pixmap)
 
-        layout_about.addWidget(label_logo)
+        layout_logos.addWidget(label_logo)
+
+        label_logo_haw = QLabel()
+        label_logo_haw.setAlignment(Qt.AlignCenter)
+        pixmap_haw = QPixmap("gfx/HAW_logo.png")
+        scaled_pixmap_haw = pixmap_haw.scaled(
+            150, 150, Qt.KeepAspectRatio, Qt.SmoothTransformation
+        )
+        label_logo_haw.setPixmap(scaled_pixmap_haw)
+
+        layout_logos.addWidget(label_logo_haw)
+
+        layout_about.addLayout(layout_logos)
+
+        label_license = QLabel()
+        html_text = "Lizenzen:<br>\
+                    <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap®</a> sind offene Daten (open data), lizenziert unter der \
+                        <a href=\"https://opendatacommons.org/licenses/odbl/1\">Open Data Commons Open Database-Lizenz </a>(ODbL) \
+                        von der <a href=\"https://osmfoundation.org/\">OpenStreetMap Stiftung</a> (OSMF).<br><br>\
+                    <a href=\"https://osmnx.readthedocs.io/en/stable/\">OSMnx</a> ist Open Source und lizenziert unter der MIT Lizenz.<br><br>\
+                    <a href=\"https://github.com/georgmangold/wolf\">W.O.L.F.</a> wird lizenziert unter der <a href=\"https://choosealicense.com/licenses/mit/\">MIT Lizenz</a>."
+        label_license.setTextFormat(Qt.RichText)
+        label_license.setTextInteractionFlags(Qt.TextBrowserInteraction)
+        label_license.setOpenExternalLinks(True)
+        label_license.linkActivated.connect(self.on_link_clicked)
+        label_license.setWordWrap(True)
+        label_license.setText(html_text)
+
+        layout_about.addWidget(label_license)
 
         layout_about.addStretch()
 
@@ -573,3 +611,6 @@ class UI(QMainWindow):
         splitter.setHandleWidth(10)
 
         main_layout.addWidget(splitter)
+    
+    def on_link_clicked(self, url):
+        QDesktopServices.openUrl(QUrl(url))

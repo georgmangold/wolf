@@ -654,6 +654,7 @@ class Controller:
             self.start = start
             self.ende = ende
             self.velocity = velocity
+            
             self.running = True
 
         finished = Signal()
@@ -681,7 +682,10 @@ class Controller:
             self.finished.emit()
 
         def setSpeed(self, velocity):
-            self.velocity = velocity
+            if velocity > 1:
+                self.velocity = velocity * velocity * velocity
+            else:
+                self.velocity = velocity
 
         def stop(self):
             self.running = False
