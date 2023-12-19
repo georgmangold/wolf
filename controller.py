@@ -138,7 +138,7 @@ class Controller:
         ## north, south, east, west = 50.3277, 50.32049083973944, 11.9474, 11.929510831832886
 
         ## create network from file or that bounding box
-        if not self.load_graphml(None, "data/haw_tankstelle.graphml"):
+        if not self.load_graphml(None, "data/haw_tankstelle.graphml", False):
             self.graph_thread_bbbox(north, south, east, west, self.network_type)
 
     def show_main_window(self):
@@ -1190,7 +1190,7 @@ class Controller:
         def setSpeed(self, velocity):
             pass
 
-    def load_graphml(self, test=False, filepath=""):
+    def load_graphml(self, test=False, filepath="", dialog=True, *args, **kwargs):
         if self.thread.isRunning():
             return
 
@@ -1211,11 +1211,12 @@ class Controller:
                 self.thread.finished.connect(self.thread_finished)
                 self.worker.graphed.connect(self.set_graph)
 
-                self.progressDialog = QProgressDialog(
-                    "Bitte warten...\nGraph wird geladen.", None, 0, 0
-                )
-                self.thread.started.connect(self.progressDialog.show)
-                self.thread.finished.connect(self.progressDialog.hide)
+                if dialog:
+                    self.progressDialog = QProgressDialog(
+                        "Bitte warten...\nGraph wird geladen.", None, 0, 0
+                    )
+                    self.thread.started.connect(self.progressDialog.show)
+                    self.thread.finished.connect(self.progressDialog.hide)
 
                 self.thread.start()
 

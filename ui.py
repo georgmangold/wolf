@@ -73,33 +73,6 @@ class MplCanvas(FigureCanvas):
         self.axes = fig.add_subplot(111)
         super(MplCanvas, self).__init__(fig)
 
-
-class ImageWidget(QWidget):
-    def __init__(self, image_path):
-
-        super().__init__()
-
-        layout = QVBoxLayout()
-        self.setLayout(layout)
-
-        self.image_label = QLabel()
-        self.image_label.setAlignment(Qt.AlignCenter)
-        self.image_label.setScaledContents(True)
-        self.image_label.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Expanding)
-        self.image_label.setMinimumSize(50, 50)
-
-        layout.addWidget(self.image_label)
-
-        pixmap = QPixmap(image_path)
-        self.set_image(pixmap)
-
-    def set_image(self, pixmap):
-        scaled_pixmap = pixmap.scaled(
-            300, 300, Qt.KeepAspectRatio, Qt.SmoothTransformation
-        )
-        self.image_label.setPixmap(scaled_pixmap)
-
-
 class UI(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -596,7 +569,6 @@ class UI(QMainWindow):
         label_license.setTextFormat(Qt.RichText)
         label_license.setTextInteractionFlags(Qt.TextBrowserInteraction)
         label_license.setOpenExternalLinks(True)
-        label_license.linkActivated.connect(self.on_link_clicked)
         label_license.setWordWrap(True)
         label_license.setText(html_text)
 
@@ -611,6 +583,3 @@ class UI(QMainWindow):
         splitter.setHandleWidth(10)
 
         main_layout.addWidget(splitter)
-    
-    def on_link_clicked(self, url):
-        QDesktopServices.openUrl(QUrl(url))

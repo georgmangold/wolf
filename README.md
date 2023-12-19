@@ -1,7 +1,8 @@
-# Projekt W.O.L.F
-Projekt W.O.L.F - Wege mit OpenStreetMap Lage Finder
-Projekt W.O.L.F - Ways with OpenStreetMap Location Finder
-![wolf](gfx/wolf_logo.jpeg)
+# Projekt W.O.L.F.
+Projekt W.O.L.F. - Wege mit OpenStreetMap Lage Finder  
+Projekt W.O.L.F. - Ways with OpenStreetMap Location Finder  
+![wolf](gfx/wolf_splashscreen.png)  
+![beispiel](gfx/beispiel.png)
 
 ## Projekt Anforderungen / Ziele
 Entwicklung einer grafischen Oberfläche zur Visualisierung von Pfadfindungsalgorithmen.
@@ -69,25 +70,25 @@ python main.py
 
 ## Theme umstellen
 ### main.py
-    apply_stylesheet(app, theme='light_amber.xml')
+    apply_stylesheet(app, theme='light_amber.xml', invert_secondary=True)
 
 ### Mögliche Themes
- 'dark_amber.xml',
- 'dark_blue.xml',
- 'dark_cyan.xml',
- 'dark_lightgreen.xml',
- 'dark_pink.xml',
- 'dark_purple.xml',
- 'dark_red.xml',
- 'dark_teal.xml',
- 'dark_yellow.xml',
- 'light_amber.xml',
- 'light_blue.xml',
- 'light_cyan.xml',
- 'light_cyan_500.xml',
- 'light_lightgreen.xml',
- 'light_pink.xml',
- 'light_purple.xml',
- 'light_red.xml',
- 'light_teal.xml',
- 'light_yellow.xml'
+- 'dark_amber.xml',
+- 'dark_blue.xml',
+- 'dark_cyan.xml',
+- 'dark_lightgreen.xml',
+- 'dark_pink.xml',
+- 'dark_purple.xml',
+- 'dark_red.xml',
+- 'dark_teal.xml',
+- 'dark_yellow.xml',
+- 'light_amber.xml',
+- 'light_blue.xml',
+- 'light_cyan.xml',
+- 'light_cyan_500.xml',
+- 'light_lightgreen.xml',
+- 'light_pink.xml',
+- 'light_purple.xml',
+- 'light_red.xml',
+- 'light_teal.xml',
+- 'light_yellow.xml'
