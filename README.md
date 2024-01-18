@@ -139,4 +139,4 @@ python main.py
 
 Inspiriert von der Uni Trier  Algorithm Demo [Shortest path](https://algo.uni-trier.de/demos/shortestpath.html).
 
-[W.O.L.F.](https://github.com/georgmangold/wolf) wird lizenziert unter der [MIT Lizenz](https://choosealicense.com/licenses/mit/).
+[W.O.L.F.](https://github.com/georgmangold/wolf) ist lizenziert unter der [MIT Lizenz](https://choosealicense.com/licenses/mit/).

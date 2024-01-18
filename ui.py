@@ -564,7 +564,7 @@ class UI(QMainWindow):
                         <a href="https://opendatacommons.org/licenses/odbl/1">Open Data Commons Open Database-Lizenz </a>(ODbL) \
                         von der <a href="https://osmfoundation.org/">OpenStreetMap Stiftung</a> (OSMF).<br><br>\
                     <a href="https://osmnx.readthedocs.io/en/stable/">OSMnx</a> ist Open Source und lizenziert unter der MIT Lizenz.<br><br>\
-                    <a href="https://github.com/georgmangold/wolf">W.O.L.F.</a> wird lizenziert unter der <a href="https://choosealicense.com/licenses/mit/">MIT Lizenz</a>.'
+                    <a href="https://github.com/georgmangold/wolf">W.O.L.F.</a> ist lizenziert unter der <a href="https://choosealicense.com/licenses/mit/">MIT Lizenz</a>.'
         label_license.setTextFormat(Qt.RichText)
         label_license.setTextInteractionFlags(Qt.TextBrowserInteraction)
         label_license.setOpenExternalLinks(True)
