@@ -13,15 +13,16 @@ Projekt W.O.L.F. - Ways with OpenStreetMap Location Finder
     - [Theme ändern](#theme-umstellen)
 - [Lizenzen](#lizenzen)
 ## Beschreibung
-**Projekt W.O.L.F.** (Wege mit OpenStreetMap Lage Finder) ist als Projektarbeit anstelle eines Wahlpflichtfachs entstanden. Ziel ist eine grafischen Oberfläche zur Visualisierung von Pfadfindungsalgorithmen ,siehe [Projekt Anforderungen / Ziele](#projekt-anforderungen--ziele).
+**Projekt W.O.L.F.** (Wege mit OpenStreetMap Lage Finder) ist als Projektarbeit im Zuge eines Wahlpflichtfachs entstanden. Ziel dieser war die Erstellung einer grafischen Oberfläche zur Visualisierung von Pfadfindungsalgorithmen, siehe [Projekt Anforderungen / Ziele](#projekt-anforderungen--ziele).
 
 ## Features
 - **Allgemein**:
-    - Setzen von *Start*, *Ziel* und *Routen* Punkten über Links-, Rechts- und Mittelklick
-    - Schrittweise *Darstellung des Suchalgorithmus* über Steuerungs Buttons und Slider rechts
-    - Setzen der *Animationsgeschwindigkeit* über Slider links
-    - *Fixieren* der Schritte am Ende, Checkbox
+    - Setzen von *Start*, *Ziel* und **Routen** Punkten über Links-, Rechts- und **Mittelklick**
+    - Schrittweise *Darstellung des Suchalgorithmus* über Steuerungs Buttons und Slider
+    - Setzen der *Animationsgeschwindigkeit* über Slider
+    - *Fixieren* der Schritte am Ende über Checkbox
     - [Themes](#theme-umstellen)
+    - Speichern der Karte als Grafik
 - Reiter **Karte**, erlaubt das Laden und Speichern einer *OpenStreetMap* Karte über
     - die Suche eines Namen, Button **"Setze Ort"**
     - Eingabe von Koordinaten einer Bounding Box, Button **"Setze Bbox"**
@@ -30,7 +31,7 @@ Projekt W.O.L.F. - Ways with OpenStreetMap Location Finder
     - anschließendes Laden der GraphML Datei, über Button **"Lade GraphML"**
 - Reiter **Algorithmen**:
     - Auswahl zwischen Dijkstra, Greedy, A*
-    - Kantengewichtung nach Strecken Länge oder Dauer
+    - Kantengewichtung nach Strecken, Länge oder Dauer
     - Zusatzeinstellungen: Dijkstra mit Ziel Ende, Greedy und A* Auswahl der Heuristik "0","Euclidean", "Euclidean²" oder "Manhattan"
     - Anzeige der Start, Ziel und Routen Punkte IDs
     - Anzeige des Gewichts, Länge und Dauer der gefunden Route
@@ -45,15 +46,15 @@ Entwicklung einer grafischen Oberfläche zur Visualisierung von Pfadfindungsalgo
 
 | Anforderung | Umsetzung |
 | --- | --- |
-| Möglichkeit eine beliebige OSM zu laden und das Straßennetz zu extrahieren. | Name, Bbox, Zoom, GraphML 
-| Unterschiedliche Darstellungsmöglichkeiten der Karte | Beschriftung + Hintergrund
-| Erzeugung des Graphen | OSMnx
-| Auswahl zwischen unterschiedlichen Algorithmen zum durchlaufen | Dijkstra, A*, Greedy
-| Auswahl des Start und Zielknotens auf der Karte durch klicken (Erweiterbar auf mehrere Ziele, s.d. auch Routen erzeugt werden können) | Links-,Rechts-, Mittelklick
-| Dijkstra, A*, Greedy, (optional Potentialfeldmethode, Routenplanung) | Dijkstra, A*, Greedy + Routen
+| Möglichkeit eine beliebige OSM zu laden und das Straßennetz zu extrahieren. |  ✔ Name, Bbox, Zoom, GraphML 
+| Unterschiedliche Darstellungsmöglichkeiten der Karte | ✔ Beschriftung + Hintergrund
+| Erzeugung des Graphen | ✔ OSMnx + NetworkX
+| Auswahl zwischen unterschiedlichen Algorithmen zum durchlaufen | ✔ Dijkstra, A*, Greedy
+| Auswahl des Start und Zielknotens auf der Karte durch klicken (Erweiterbar auf mehrere Ziele, s.d. auch Routen erzeugt werden können) | ✔ Links-,Rechts-, Mittelklick
+| Dijkstra, A*, Greedy, (optional Potentialfeldmethode, Routenplanung) | ✔ Dijkstra, A*, Greedy + Routen
 | Visualisierung des Suchalgorithmus (Einzelne Schritte sukzessive darstellbar) | ✔
-| Mögliche Programmiersprachen Python, C++, Java | Python + Qt
-| Cross Plattform Kompatibilität (Windows, MacOS, Linux) | Python + Qt
+| Mögliche Programmiersprachen Python, C++, Java | ✔ Python + Qt
+| Cross Plattform Kompatibilität (Windows, MacOS, Linux) | ✔ Python + Qt
 
 ## Anleitung
 ### Ausführen
@@ -135,5 +136,7 @@ python main.py
 [OpenStreetMap®](https://www.openstreetmap.org/copyright) sind offene Daten (open data), lizenziert unter der [Open Data Commons Open Database-Lizenz](https://opendatacommons.org/licenses/odbl/1) (ODbL) von der [OpenStreetMap Stiftung](https://osmfoundation.org/) (OSMF).
 
 [OSMnx](https://osmnx.readthedocs.io/en/stable/) ist Open Source und lizenziert unter der MIT Lizenz.
+
+Inspiriert von der Uni Trier  Algorithm Demo [Shortest path](https://algo.uni-trier.de/demos/shortestpath.html).
 
 [W.O.L.F.](https://github.com/georgmangold/wolf) wird lizenziert unter der [MIT Lizenz](https://choosealicense.com/licenses/mit/).
