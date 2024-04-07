@@ -22,7 +22,7 @@ matplotlib==3.8.2
 mercantile==1.2.1
 networkx==3.2.1
 numpy==1.26.2
-osmnx==1.8.0
+osmnx==1.9.2
 packaging==23.2
 pandas==2.1.4
 Pillow==10.1.0

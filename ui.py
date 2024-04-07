@@ -78,7 +78,7 @@ class UI(QMainWindow):
         self.setWindowTitle("W.O.L.F. - Ways with OpenStreetMap Location Finder")
         self.setWindowIcon(QIcon("gfx/wolf_logo_old.png"))
 
-        version = "1.00 vom 19.12.2023"
+        version = "1.01 vom 07.07.2024"
 
         main_widget = QWidget()
         self.setCentralWidget(main_widget)

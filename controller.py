@@ -428,7 +428,7 @@ class Controller:
         south, north = self.ui.canvas.axes.get_ylim()
 
         # Muss wegen Projizierung auf epsg:3857 wieder in epsg:4326 umgewandelt werden
-        polygon = ox.utils_geo.bbox_to_poly(north, south, east, west)
+        polygon = ox.utils_geo.bbox_to_poly(bbox=(north, south, east, west))
         if self.graph.graph["crs"] == "epsg:3857":
             polygon, _ = ox.projection.project_geometry(
                 polygon, crs="epsg:3857", to_crs="epsg:4326"
@@ -731,10 +731,7 @@ class Controller:
 
         def run(self):
             graph = ox.graph_from_bbox(
-                self.north,
-                self.south,
-                self.east,
-                self.west,
+                bbox=(self.north, self.south, self.east, self.west),
                 network_type=self.network_type,
             )
             self.graphed.emit(graph)
